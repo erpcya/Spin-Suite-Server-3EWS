@@ -1,0 +1,22 @@
+<xsd:schema targetNamespace="http://www.erpconsultoresyasociados.com/" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://www.erpconsultoresyasociados.com/" xmlns:wsdl="wsdl">
+     <xsd:element name="InitialLoad" type="tns:InitialLoad"/>
+     <xsd:complexType name="InitialLoad">
+  	<xsd:sequence>
+  	  <xsd:element name="user" type="xsd:string"/>
+  	  <xsd:element name="pass" type="xsd:string"/>
+	</xsd:sequence>
+     </xsd:complexType>
+     <xsd:element name="InitialLoadResponse" type="tns:DataSetSQLS"/>
+     <xsd:complexType name="DataSetSQLS">
+   	<xsd:sequence>
+   		<xsd:element name="InitialLoadResponse" type="tns:InitialLoadResponse" minOccurs="0" maxOccurs="unbounded"/>
+		<xsd:element name="error" type="xsd:string"/>
+   	</xsd:sequence>
+     </xsd:complexType>
+     <xsd:complexType name="InitialLoadResponse">
+  	<xsd:sequence>
+	  <xsd:element name="name" type="xsd:string"/>
+  	  <xsd:element name="sql" type="xsd:string"/>
+	</xsd:sequence>
+     </xsd:complexType>
+</xsd:schema>
