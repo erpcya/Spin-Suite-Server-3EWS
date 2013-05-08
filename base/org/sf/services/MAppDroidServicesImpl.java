@@ -1,14 +1,27 @@
+/*************************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                              *
+ * This program is free software; you can redistribute it and/or modify it           *
+ * under the terms version 2 of the GNU General Public License as published          *
+ * by the Free Software Foundation. This program is distributed in the hope          *
+ * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied        *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                  *
+ * See the GNU General Public License for more details.                              *
+ * You should have received a copy of the GNU General Public License along           *
+ * with this program; if not, write to the Free Software Foundation, Inc.,           *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                            *
+ * For the text or an alternative of this public license, you may reach us           *
+ * Copyright (C) 2012-2013 E.R.P. Consultores y Asociados, S.A. All Rights Reserved. *
+ * Contributor(s): Carlos Parada www.erpconsultoresyasociados.com                    *
+ *************************************************************************************/
+
 package org.sf.services;
 
-import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-
-import org.apache.commons.collections.map.HashedMap;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -16,20 +29,21 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 
 import com._3e.ADInterface.CompiereService;
-import com.erpconsultoresyasociados.DataSetSQLS;
-import com.erpconsultoresyasociados.InitialLoad;
-import com.erpconsultoresyasociados.InitialLoadDocument;
-import com.erpconsultoresyasociados.InitialLoadResponse;
-import com.erpconsultoresyasociados.InitialLoadResponseDocument;
+import com.erpconsultoresyasociados.ILCallDocument;
+import com.erpconsultoresyasociados.ILResponseDocument;
+import com.erpconsultoresyasociados.Query;
+import com.erpconsultoresyasociados.Response;
 
 /**
- * @author carlos
+ * 
+ * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a>
  *
  */
 public class MAppDroidServicesImpl {
 	
 	/**
-	 * 
+	 * *** Constructor ***
+	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 11:21:46 PM
 	 */
 	public MAppDroidServicesImpl() {
 		// TODO Auto-generated constructor stub
@@ -37,9 +51,16 @@ public class MAppDroidServicesImpl {
 		m_adempiere.connect();	
 	}
 	
-	public InitialLoadResponseDocument initialLoad() throws SQLException
+	/**
+	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 11:21:54 PM
+	 * @return
+	 * @throws SQLException
+	 * @return ILResponseDocument
+	 * Initial Load Process
+	 */
+	public ILResponseDocument initialLoad() throws SQLException
 	{
-		InitialLoadResponseDocument resp  = InitialLoadResponseDocument.Factory.newInstance();
+		ILResponseDocument resp  = ILResponseDocument.Factory.newInstance();
 		
 		StringBuffer sql = new StringBuffer();
 		sql.append("select XXIL.*,TAB.TableName from XX_MB_InitialLoad XXIL Left Join AD_Table TAB on XXIL.AD_Table_ID=TAB.AD_Table_ID Where XXIL.AD_Client_ID ="+m_AD_Client_ID+" And XXIL.isActive='Y' order by XXIL.SeqNo ");
@@ -47,13 +68,13 @@ public class MAppDroidServicesImpl {
 		PreparedStatement ps = DB.prepareStatement(sql.toString(),null);
 		ResultSet rs = ps.executeQuery();
 		
-		DataSetSQLS dataset =resp.addNewInitialLoadResponse();
+		Response dataset =resp.addNewILResponse();
 		while (rs.next())
 		{
 			if (rs.getString("tablename")==null)
 			{
-				InitialLoadResponse rp = dataset.addNewInitialLoadResponse();
-				rp.setSql(rs.getString("sql"));
+				Query rp = dataset.addNewQuery();
+				rp.setSQL(rs.getString("sql"));
 				rp.setName(rs.getString("name"));
 			}
 			else
@@ -65,7 +86,15 @@ public class MAppDroidServicesImpl {
 		return resp;
 		
 	}
-	private void loadFromTable(DataSetSQLS ds, ResultSet rs) throws SQLException
+	/**
+	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 9:50:30 PM
+	 * @param ds
+	 * @param rs
+	 * @throws SQLException
+	 * @return void
+	 * Load Data From Table
+	 */
+	private void loadFromTable(Response ds, ResultSet rs) throws SQLException
 	{
 		String l_campo = "";
 		int l_init=-1;
@@ -73,12 +102,12 @@ public class MAppDroidServicesImpl {
 		String l_sql = "";
 		Object l_Value = new Object();
 		StringBuffer sql = new StringBuffer(),where = new StringBuffer();
+		
 		where.append(rs.getString("whereclause")!=null?" Where " + rs.getString("whereclause").replaceAll("%AD_User_ID%", Env.getContext(m_adempiere.getM_ctx(), "#AD_User_ID")):"");
 		where.append((where.length()>0?" And (AD_Client_ID="+m_AD_Client_ID+" Or AD_Client_ID=0)":" Where (AD_Client_ID="+m_AD_Client_ID+" Or AD_Client_ID=0)"));
 		
 		sql.append("Select * from "+rs.getString("tablename")+where.toString());
 		
-		//Preparando la Consulta
 		PreparedStatement psquery = DB.prepareStatement(sql.toString(),null);
 		ResultSet rsquery =psquery.executeQuery();
 		
@@ -93,9 +122,9 @@ public class MAppDroidServicesImpl {
 				l_Value =transformValue(rsquery.getObject(l_campo));
 				l_sql = l_sql.substring(0,l_init ) + l_Value+ l_sql.substring(l_end+1,l_sql.length());
 			}
-			InitialLoadResponse rp = ds.addNewInitialLoadResponse();
-			rp.setSql(l_sql);
-			rp.setName(rs.getString("name"));
+			Query qu = ds.addNewQuery();
+			qu.setSQL(l_sql);
+			qu.setName(rs.getString("name"));
 			
 		}
 		rsquery.close();
@@ -103,46 +132,51 @@ public class MAppDroidServicesImpl {
 		
 	}
 	
+	/**
+	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 9:48:33 PM
+	 * @param p_value
+	 * @return String
+	 * Transform Date
+	 */
 	private String transformValue(Object p_value)
 	{
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); 
 		
 		if(p_value==null)
-			p_value = new String ("null");
+			return "";
 		else
 		{
-			if (p_value instanceof String)
-				p_value = "'"+p_value+"'";
-			else if (p_value instanceof BigDecimal)
-				p_value = p_value.toString();
-			else if (p_value instanceof Integer)
-				p_value = p_value.toString();
-			else if (p_value instanceof Date)
-				p_value="'"+dateFormat.format((Date)p_value)+"'";
+			if (p_value instanceof Date)
+				p_value=dateFormat.format((Date)p_value);
 			else if (p_value instanceof java.util.Date)
-				p_value="'"+dateFormat.format((java.util.Date)p_value)+"'";
+				p_value=dateFormat.format((java.util.Date)p_value);
 			else if (p_value instanceof Timestamp)
-				p_value = "'"+dateFormat.format((Timestamp)p_value)+"'";
-			else if (p_value instanceof Double)
-				p_value = p_value.toString();
+				p_value = dateFormat.format((Timestamp)p_value);
 		}
 		return p_value.toString();	
 	}
-	protected boolean validateuser(InitialLoadDocument input)
+	
+	/**
+	 * 
+	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 9:34:36 PM
+	 * @param input
+	 * @return boolean
+	 * Return Result of Logging In Adempiere
+	 */
+	protected boolean validateUser(ILCallDocument input)
 	{
-		InitialLoad il = input.getInitialLoad();
-		return loggin(il.getUser(), il.getPass());
+		com.erpconsultoresyasociados.Login il = input.getILCall();
+		return loggin(il.getUser(), il.getPassWord());
 	}
 	
-	/*
-	 * @author Carlos Parada
-	 * @date 01/05/2012
-	 * @time 14:14:10
-	 * @type AppDroidServices
-	 * @param user Nombre del Usuario, pass Contraseña
-	 * @description
-	 * @return retorna booleano dependiendo si el usuario existe y tiene roles asignados
-	 * realiza el login del usuario que tienen rol asociado en adempiere 
+	/**
+	 * 
+	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 9:37:43 PM
+	 * @param user
+	 * @param pass
+	 * @return
+	 * @return boolean
+	 * Logging In Adempiere
 	 */
 	private boolean loggin(String user, String pass)
 	{
@@ -164,10 +198,14 @@ public class MAppDroidServicesImpl {
 		return m_loggin;
 	}
 	
+	/** Compiere Service*/
 	protected CompiereService m_adempiere;
+	/** Client ID*/
 	private Integer m_AD_Client_ID;
+	/** Logger*/
 	protected static CLogger	log = CLogger.getCLogger(AppDroidServicesImpl.class);
 
+	/**
 	@SuppressWarnings("unused")
 	public static void main(String[] args) {
 		//org.compiere.Adempiere.startupEnvironment(true);
@@ -193,4 +231,5 @@ public class MAppDroidServicesImpl {
 		System.out.println(a);
 		
 	}
+	**/
 }

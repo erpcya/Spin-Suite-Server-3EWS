@@ -1,22 +1,56 @@
 <xsd:schema targetNamespace="http://www.erpconsultoresyasociados.com/" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://www.erpconsultoresyasociados.com/" xmlns:wsdl="wsdl">
-     <xsd:element name="InitialLoad" type="tns:InitialLoad"/>
-     <xsd:complexType name="InitialLoad">
-  	<xsd:sequence>
-  	  <xsd:element name="user" type="xsd:string"/>
-  	  <xsd:element name="pass" type="xsd:string"/>
-	</xsd:sequence>
+<!-- /*************************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                              *
+ * This program is free software; you can redistribute it and/or modify it           *
+ * under the terms version 2 of the GNU General Public License as published          *
+ * by the Free Software Foundation. This program is distributed in the hope          *
+ * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied        *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                  *
+ * See the GNU General Public License for more details.                              *
+ * You should have received a copy of the GNU General Public License along           *
+ * with this program; if not, write to the Free Software Foundation, Inc.,           *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                            *
+ * For the text or an alternative of this public license, you may reach us           *
+ * Copyright (C) 2012-2013 E.R.P. Consultores y Asociados, S.A. All Rights Reserved. *
+ * Contributor(s): Carlos Parada www.erpconsultoresyasociados.com                    *
+ *************************************************************************************/ -->
+
+  <!-- Call Web Service --> 
+  <xsd:element name="ILCall" type="tns:Login"/>
+  <!-- Response Of Web Service -->
+  <xsd:element name="ILResponse" type="tns:Response"/>
+  	 
+  	 <!-- Login Adempiere -->
+     <xsd:complexType name="Login">
+  	 	<xsd:sequence>
+  	  		<xsd:element name="User" type="xsd:string"/>
+  	  		<xsd:element name="PassWord" type="xsd:string"/>
+  	  		<xsd:element name="serviceType" type="xsd:string"/>
+	 	</xsd:sequence>
      </xsd:complexType>
-     <xsd:element name="InitialLoadResponse" type="tns:DataSetSQLS"/>
-     <xsd:complexType name="DataSetSQLS">
-   	<xsd:sequence>
-   		<xsd:element name="InitialLoadResponse" type="tns:InitialLoadResponse" minOccurs="0" maxOccurs="unbounded"/>
-		<xsd:element name="error" type="xsd:string"/>
-   	</xsd:sequence>
+    
+     <!-- Response Web Service -->
+     <xsd:complexType name="Response">
+   	 	<xsd:sequence>
+   			<xsd:element name="Query" type="tns:Query" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="Error" type="xsd:string"/>
+     	</xsd:sequence>
      </xsd:complexType>
-     <xsd:complexType name="InitialLoadResponse">
-  	<xsd:sequence>
-	  <xsd:element name="name" type="xsd:string"/>
-  	  <xsd:element name="sql" type="xsd:string"/>
-	</xsd:sequence>
+    
+     <!-- SQL Structure  -->
+     <xsd:complexType name="Query">
+  	 	<xsd:sequence>
+	  		<xsd:element name="Name" type="xsd:string"/>
+  	  		<xsd:element name="SQL" type="xsd:string"/>
+  	  		<xsd:element name="Values" type="tns:Values" minOccurs="0" maxOccurs="unbounded"/>
+	 	</xsd:sequence>
      </xsd:complexType>
+     
+     <!-- Values  -->
+     <xsd:complexType name="Values">
+  	 	<xsd:sequence>
+	  		<xsd:element name="Value" type="xsd:string"/>
+	 	</xsd:sequence>
+     </xsd:complexType>
+     
 </xsd:schema>

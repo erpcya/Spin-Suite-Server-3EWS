@@ -1,74 +1,78 @@
+/*************************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                              *
+ * This program is free software; you can redistribute it and/or modify it           *
+ * under the terms version 2 of the GNU General Public License as published          *
+ * by the Free Software Foundation. This program is distributed in the hope          *
+ * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied        *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                  *
+ * See the GNU General Public License for more details.                              *
+ * You should have received a copy of the GNU General Public License along           *
+ * with this program; if not, write to the Free Software Foundation, Inc.,           *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                            *
+ * For the text or an alternative of this public license, you may reach us           *
+ * Copyright (C) 2012-2013 E.R.P. Consultores y Asociados, S.A. All Rights Reserved. *
+ * Contributor(s): Carlos Parada www.erpconsultoresyasociados.com                    *
+ *************************************************************************************/
 package org.sf.services;
 
 
 import java.sql.SQLException;
 import javax.xml.namespace.QName;
 import org.codehaus.xfire.fault.XFireFault;
-import com.erpconsultoresyasociados.DataSetSQLS;
-import com.erpconsultoresyasociados.InitialLoadDocument;
-import com.erpconsultoresyasociados.InitialLoadResponseDocument;
+import org.compiere.util.Env;
+import org.compiere.util.Msg;
+import com.erpconsultoresyasociados.ILCallDocument;
+import com.erpconsultoresyasociados.ILResponseDocument;
+import com.erpconsultoresyasociados.Response;
 
 /**
- * @author carlos Parada
+ * 
+ * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a>
  *
  */
 public class AppDroidServicesImpl extends MAppDroidServicesImpl implements AppDroidServices {
 
-	/*
-	 * @author Carlos
-	 * @date 01/05/2012
-	 * @time 14:04:32
-	 * @type AppDroidServices
-	 * @param
-	 * @description
-	 * @return
-	 * @see org.mb.appdroid.AppDroidServices#initLoad(java.lang.String, java.lang.String)
+	/**
+	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 9:28:03 PM
+	 * Get Response Initial Load 
 	 */
 	@Override
-	public InitialLoadResponseDocument InitialLoad(InitialLoadDocument req)
+	public ILResponseDocument InitialLoad(ILCallDocument req)
 			throws XFireFault {
 		// TODO Auto-generated method stub
 		
-		InitialLoadResponseDocument resp;
+		ILResponseDocument resp;
 		
-		if (validateuser(req))
+		if (validateUser(req))
 		{
 			try {
 				resp = initialLoad();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
-				resp = InitialLoadResponseDocument.Factory.newInstance();
-				DataSetSQLS ds = resp.addNewInitialLoadResponse();
-				ds.setError(e.getMessage());
+				resp = ILResponseDocument.Factory.newInstance();
+				Response rs = resp.addNewILResponse();
+				rs.setError(e.getMessage());
 				throw new XFireFault(e.getClass().toString() + " " + e.getMessage() , e.getCause(), new QName("initLoad"));
 			}
 		}
 		else
 		{
-			resp = InitialLoadResponseDocument.Factory.newInstance();
-			DataSetSQLS ds = resp.addNewInitialLoadResponse();
-			ds.setError("Usuario o Contraseña incorrecta");
-			throw new XFireFault("Usuario o Contraseña incorrecta",new Throwable("Usuario o Contraseña incorrecta"), new QName("authenticate"));
-			
+			resp = ILResponseDocument.Factory.newInstance();
+			Response ds = resp.addNewILResponse();
+			ds.setError(Msg.translate(Env.getCtx(), "UserPwdError"));
+			throw new XFireFault(Msg.translate(Env.getCtx(), "UserPwdError"),new Throwable(Msg.translate(Env.getCtx(), "UserPwdError")), new QName("authenticate"));			
 		}
 				
 		return resp;
 	}
 	
-	
-	/*
-	 * @author Carlos Parada
-	 * @date 01/05/2012
-	 * @time 14:14:10
-	 * @type AppDroidServices
-	 * @param
-	 * @description
-	 * @return
-	 * @see org.mb.appdroid.AppDroidServices#getVersion()
+	/**
+	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 9:28:03 PM
+	 * Get Version Of AppDroid Services 
 	 */
 	@Override
 	public String getVersion() {
 		// TODO Auto-generated method stub
-		return "1.0";
+		return "2.0";
 	}
 }
