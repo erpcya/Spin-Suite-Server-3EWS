@@ -1,4 +1,4 @@
-<xsd:schema targetNamespace="http://www.erpconsultoresyasociados.com/" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://www.erpconsultoresyasociados.com/" xmlns:wsdl="wsdl">
+<xsd:schema targetNamespace="http://www.erpcya.com/" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://www.erpcya.com/" xmlns:wsdl="wsdl">
 <!-- /*************************************************************************************
  * Product: Adempiere ERP & CRM Smart Business Solution                              *
  * This program is free software; you can redistribute it and/or modify it           *
@@ -12,7 +12,7 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                            *
  * For the text or an alternative of this public license, you may reach us           *
  * Copyright (C) 2012-2013 E.R.P. Consultores y Asociados, S.A. All Rights Reserved. *
- * Contributor(s): Carlos Parada www.erpconsultoresyasociados.com                    *
+ * Contributor(s): Carlos Parada www.erpcya.com                    					 *
  *************************************************************************************/ -->
 
   <!-- Call Web Service --> 

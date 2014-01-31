@@ -29,10 +29,10 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 
 import com._3e.ADInterface.CompiereService;
-import com.erpconsultoresyasociados.ILCallDocument;
-import com.erpconsultoresyasociados.ILResponseDocument;
-import com.erpconsultoresyasociados.Query;
-import com.erpconsultoresyasociados.Response;
+import com.erpcya.ILCallDocument;
+import com.erpcya.ILResponseDocument;
+import com.erpcya.Query;
+import com.erpcya.Response;
 
 /**
  * 
@@ -165,7 +165,7 @@ public class MAppDroidServicesImpl {
 	 */
 	protected boolean validateUser(ILCallDocument input)
 	{
-		com.erpconsultoresyasociados.Login il = input.getILCall();
+		com.erpcya.Login il = input.getILCall();
 		return loggin(il.getUser(), il.getPassWord());
 	}
 	
