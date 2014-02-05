@@ -42,7 +42,7 @@
     
  <service>
   <name>AppDroidServices</name>
-   <namespace>http://www.erpconsultoresyasociados.com</namespace>
+   <namespace>http://www.erpcya.com</namespace>
     <serviceClass>org.sf.services.AppDroidServices</serviceClass>
     <implementationClass>org.sf.services.AppDroidServicesImpl</implementationClass>
     <serviceFactory>org.codehaus.xfire.xmlbeans.XmlBeansServiceFactory</serviceFactory>
