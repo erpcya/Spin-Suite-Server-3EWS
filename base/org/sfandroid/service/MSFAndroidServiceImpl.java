@@ -14,7 +14,7 @@
  * Contributor(s): Carlos Parada www.erpconsultoresyasociados.com                    *
  *************************************************************************************/
 
-package org.sf.services;
+package org.sfandroid.service;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -39,13 +39,13 @@ import com.erpcya.Response;
  * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a>
  *
  */
-public class MAppDroidServicesImpl {
+public class MSFAndroidServiceImpl {
 	
 	/**
 	 * *** Constructor ***
 	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 11:21:46 PM
 	 */
-	public MAppDroidServicesImpl() {
+	public MSFAndroidServiceImpl() {
 		// TODO Auto-generated constructor stub
 		m_adempiere = new CompiereService();
 		m_adempiere.connect();	
@@ -203,7 +203,7 @@ public class MAppDroidServicesImpl {
 	/** Client ID*/
 	private Integer m_AD_Client_ID;
 	/** Logger*/
-	protected static CLogger	log = CLogger.getCLogger(AppDroidServicesImpl.class);
+	protected static CLogger	log = CLogger.getCLogger(SFAndroidServiceImpl.class);
 
 	/**
 	@SuppressWarnings("unused")

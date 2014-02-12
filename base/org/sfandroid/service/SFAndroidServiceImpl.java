@@ -13,7 +13,7 @@
  * Copyright (C) 2012-2013 E.R.P. Consultores y Asociados, S.A. All Rights Reserved. *
  * Contributor(s): Carlos Parada www.erpcya.com                    *
  *************************************************************************************/
-package org.sf.services;
+package org.sfandroid.service;
 
 
 import java.sql.SQLException;
@@ -30,7 +30,7 @@ import com.erpcya.Response;
  * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a>
  *
  */
-public class AppDroidServicesImpl extends MAppDroidServicesImpl implements AppDroidServices {
+public class SFAndroidServiceImpl extends MSFAndroidServiceImpl implements SFAndroidService {
 
 	/**
 	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 9:28:03 PM

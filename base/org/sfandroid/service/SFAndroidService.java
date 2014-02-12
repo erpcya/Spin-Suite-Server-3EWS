@@ -13,7 +13,7 @@
  * Copyright (C) 2012-2013 E.R.P. Consultores y Asociados, S.A. All Rights Reserved. *
  * Contributor(s): Carlos Parada www.erpcya.com                    					 *
  *************************************************************************************/
-package org.sf.services;
+package org.sfandroid.service;
 
 import org.codehaus.xfire.fault.XFireFault;
 import com.erpcya.ILCallDocument;
@@ -25,7 +25,7 @@ import com.erpcya.ILResponseDocument;
  *
  */
 
-public interface AppDroidServices {
+public interface SFAndroidService {
 	
 	public ILResponseDocument InitialLoad(ILCallDocument req) throws XFireFault;
 	public String getVersion();
