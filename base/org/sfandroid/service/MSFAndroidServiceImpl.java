@@ -11,7 +11,7 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                            *
  * For the text or an alternative of this public license, you may reach us           *
  * Copyright (C) 2012-2013 E.R.P. Consultores y Asociados, S.A. All Rights Reserved. *
- * Contributor(s): Carlos Parada www.erpconsultoresyasociados.com                    *
+ * Contributor(s): Carlos Parada www.erpcya.com                    					 *
  *************************************************************************************/
 
 package org.sfandroid.service;
@@ -22,11 +22,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.List;
+
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
+import org.sfandroid.model.MSFASyncMenu;
 
 import com._3e.ADInterface.CompiereService;
 import com.erpcya.ILCallDocument;
@@ -61,8 +64,38 @@ public class MSFAndroidServiceImpl {
 	public ILResponseDocument initialLoad() throws SQLException
 	{
 		ILResponseDocument resp  = ILResponseDocument.Factory.newInstance();
+		//Get List of Items
+		List<MSFASyncMenu> syncMenuItems = MSFASyncMenu.getNodes(0, m_WebServiceDefinition);
 		
-		StringBuffer sql = new StringBuffer();
+		Response dataset =resp.addNewILResponse();
+		for (MSFASyncMenu item:syncMenuItems){
+			
+			//Send Rule Before
+			if (item.getAD_RuleBefore_ID()!=0){
+				Query rp = dataset.addNewQuery();
+				rp.setName(item.getName());
+				rp.setSQL(item.getAD_RuleBefore().getScript());
+			}
+			
+			//Get Rule From Sync Table
+			if(item.getSFA_SyncTable_ID()!=0 && item.getWS_WebServiceType_ID()==0){
+				if (item.getSFA_SyncTable().getAD_Rule_ID()!=0){
+					Query rp = dataset.addNewQuery();
+					rp.setName(item.getName());
+					rp.setSQL(item.getSFA_SyncTable().getAD_Rule().getScript());
+				}
+			}
+			
+			//Send Rule After
+			if (item.getAD_RuleAfter_ID()!=0){
+				Query rp = dataset.addNewQuery();
+				rp.setName(item.getName());
+				rp.setSQL(item.getAD_RuleAfter().getScript());
+			}
+			
+		}
+		
+		/*StringBuffer sql = new StringBuffer();
 		sql.append("select XXIL.*,TAB.TableName from XX_MB_InitialLoad XXIL Left Join AD_Table TAB on XXIL.AD_Table_ID=TAB.AD_Table_ID Where XXIL.AD_Client_ID ="+m_AD_Client_ID+" And XXIL.isActive='Y' order by XXIL.SeqNo ");
 		
 		PreparedStatement ps = DB.prepareStatement(sql.toString(),null);
@@ -82,8 +115,19 @@ public class MSFAndroidServiceImpl {
 			
 		}
 		rs.close();
-		ps.close();
+		ps.close();*/
+		
 		return resp;
+		
+	}
+	/**
+	 * Get Data From Table in Web Service
+	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> 12/02/2014, 23:26:47
+	 * @param res
+	 * @return void
+	 */
+	private void getDataFromTable(Response res)
+	{
 		
 	}
 	/**
@@ -204,6 +248,8 @@ public class MSFAndroidServiceImpl {
 	private Integer m_AD_Client_ID;
 	/** Logger*/
 	protected static CLogger	log = CLogger.getCLogger(SFAndroidServiceImpl.class);
+	/** Web Service Definition*/
+	public static final String m_WebServiceDefinition = "SFAndroidService";
 
 	/**
 	@SuppressWarnings("unused")

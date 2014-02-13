@@ -13,6 +13,7 @@
 	<!-- set global properties for this build -->
 	<!--<property environment="env"/>-->
 	<property name="a3ewsdir" value="${basedir}/../3E_WebServices"/>
+	<property name="sfaserver" value="${basedir}/../SFAndroid-Server"/>
 	<property name="src.dir" value="${a3ewsdir}/WEB-INF/src"/>
 	<property name="classes.dir" value="${a3ewsdir}/WEB-INF/classes"/>
 	<property name="dist.dir" value="${basedir}/dist"/>
@@ -36,6 +37,7 @@
 	  	<pathelement location="${a3ewsdir}/WEB-INF/src"/>
 		<pathelement location="${basedir}/base"/>
 		
+		
 	    <fileset dir="${a3ewsdir}/WEB-INF/lib">
 	    	<include name="*.jar"/>
 	    </fileset>
@@ -43,7 +45,6 @@
 	    <fileset dir="${basedir}/WEB-INF/lib">
 	    	<include name="*.jar"/>
 	    </fileset>
-		
                 <pathelement location="${Adempiere.dir}/../base/build"/>
                 <pathelement location="${Adempiere.dir}/../client/build"/>
                 <pathelement location="${Adempiere.dir}/../JasperReports/build"/>
@@ -51,6 +52,10 @@
 	    	<include name="*.jar"/>
 	    </fileset>
 		
+		<fileset dir="${sfaserver}/packages/SFAndroid-Server/lib">
+	    	<include name="*.jar"/>
+	    </fileset>
+	    		
 	</path>
 
         <!-- define xmlbean task -->
@@ -70,13 +75,13 @@
 	             srcgendir="${basedir}/temp">
 	    	<classpath refid="compile.classpath"/>
 	    </xmlbean>
-	    <xmlbean javasource="1.5" schema="${basedir}/WEB-INF/xsd" destfile="${basedir}/WEB-INF/lib/appdroidws.jar"
+	    <xmlbean javasource="1.5" schema="${basedir}/WEB-INF/xsd" destfile="${basedir}/WEB-INF/lib/sfandroidws.jar"
 	             srcgendir="${basedir}/temp">
 	             
 	    	<classpath refid="compile.classpath"/>
 	    </xmlbean>
             <jar jarfile="${a3ewsdir}/WEB-INF/lib/generated_xmlbeans-sources.jar" basedir="${basedir}/temp" duplicate="preserve"/>
-            <jar jarfile="${basedir}/WEB-INF/lib/appdroidws.jar" basedir="${basedir}/temp" duplicate="preserve"/>
+            <jar jarfile="${basedir}/WEB-INF/lib/sfandroidws.jar" basedir="${basedir}/temp" duplicate="preserve"/>
 	    <delete dir="${basedir}/temp"/>
 	</target>
 

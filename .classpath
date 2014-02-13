@@ -4,9 +4,9 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/3E_WebServices"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/adempiere_370"/>
-	<classpathentry kind="lib" path="WEB-INF/lib/appdroidws.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/xbean.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/xfire-all-1.2.6.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/SFAndroid-Server"/>
+	<classpathentry kind="lib" path="WEB-INF/lib/sfandroidws.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

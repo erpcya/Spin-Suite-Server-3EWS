@@ -43,7 +43,7 @@
  <service>
   <name>SFAndroidService</name>
    <namespace>http://www.erpcya.com</namespace>
-    <serviceClass>org.sfandroid.service.SFAndroidServices</serviceClass>
+    <serviceClass>org.sfandroid.service.SFAndroidService</serviceClass>
     <implementationClass>org.sfandroid.service.SFAndroidServiceImpl</implementationClass>
     <serviceFactory>org.codehaus.xfire.xmlbeans.XmlBeansServiceFactory</serviceFactory>
 	<scope>request</scope>
