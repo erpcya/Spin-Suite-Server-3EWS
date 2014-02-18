@@ -78,11 +78,11 @@ public class MSFAndroidServiceImpl {
 			}
 			
 			//Get Rule From Sync Table
-			if(item.getSFA_SyncTable_ID()!=0 && item.getWS_WebServiceType_ID()==0){
-				if (item.getSFA_SyncTable().getAD_Rule_ID()!=0){
+			if(item.getSFA_Table_ID()!=0 && item.getWS_WebServiceType_ID()==0){
+				if (item.getSFA_Table().getAD_Rule_ID()!=0){
 					Query rp = dataset.addNewQuery();
 					rp.setName(item.getName());
-					rp.setSQL(item.getSFA_SyncTable().getAD_Rule().getScript());
+					rp.setSQL(item.getSFA_Table().getAD_Rule().getScript());
 				}
 			}
 			
