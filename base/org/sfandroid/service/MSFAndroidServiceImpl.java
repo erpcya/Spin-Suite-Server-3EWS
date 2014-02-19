@@ -31,7 +31,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
-import org.sfandroid.model.MSFAColumn;
+
 import org.sfandroid.model.MSFASyncMenu;
 import org.sfandroid.model.MSFATable;
 
@@ -40,7 +40,7 @@ import com.erpcya.ILCallDocument;
 import com.erpcya.ILResponseDocument;
 import com.erpcya.Query;
 import com.erpcya.Response;
-import com.erpcya.Values;
+
 
 /**
  * 
@@ -159,6 +159,8 @@ public class MSFAndroidServiceImpl {
 		String[] columnsout = p_Wst.getOutputColumnNames(false);
 		String[] columnsin = p_Wst.getInputColumnNames(false);
 		
+		System.out.println(p_Para.getConstantValue());
+		
 		if (p_Para.getConstantValue().equals("Insert")){
 			sql = "INSERT INTO " 
 					+ sfaTable.getTableName() +" (";
@@ -191,6 +193,7 @@ public class MSFAndroidServiceImpl {
 				sql+= columnsout[i] + " = ? " + ( i == columnsout.length-1 ? "" : " AND " );
 		}
 		
+		System.out.println(sql);
 		return sql;
 	}
 	
