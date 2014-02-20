@@ -24,18 +24,23 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+import org.compiere.model.MWebServiceType;
+import org.compiere.model.X_WS_WebService_Para;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
+
 import org.sfandroid.model.MSFASyncMenu;
+import org.sfandroid.model.MSFATable;
 
 import com._3e.ADInterface.CompiereService;
 import com.erpcya.ILCallDocument;
 import com.erpcya.ILResponseDocument;
 import com.erpcya.Query;
 import com.erpcya.Response;
+
 
 /**
  * 
@@ -61,8 +66,7 @@ public class MSFAndroidServiceImpl {
 	 * @return ILResponseDocument
 	 * Initial Load Process
 	 */
-	public ILResponseDocument initialLoad() throws SQLException
-	{
+	public ILResponseDocument initialLoad() throws SQLException{
 		ILResponseDocument resp  = ILResponseDocument.Factory.newInstance();
 		//Get List of Items
 		List<MSFASyncMenu> syncMenuItems = MSFASyncMenu.getNodes(0, m_WebServiceDefinition);
@@ -72,25 +76,30 @@ public class MSFAndroidServiceImpl {
 			
 			//Send Rule Before
 			if (item.getAD_RuleBefore_ID()!=0){
-				Query rp = dataset.addNewQuery();
-				rp.setName(item.getName());
-				rp.setSQL(item.getAD_RuleBefore().getScript());
+				Query query = dataset.addNewQuery();
+				query.setName(item.getName());
+				query.setSQL(item.getAD_RuleBefore().getScript());
 			}
 			
 			//Get Rule From Sync Table
 			if(item.getSFA_Table_ID()!=0 && item.getWS_WebServiceType_ID()==0){
 				if (item.getSFA_Table().getAD_Rule_ID()!=0){
-					Query rp = dataset.addNewQuery();
-					rp.setName(item.getName());
-					rp.setSQL(item.getSFA_Table().getAD_Rule().getScript());
+					Query query = dataset.addNewQuery();
+					query.setName(item.getName());
+					query.setSQL(item.getSFA_Table().getAD_Rule().getScript());
 				}
 			}
 			
+			//Get Data From Web Service Type 
+			else if (item.getSFA_Table_ID()!=0 && item.getWS_WebServiceType_ID()!=0)
+				setDataFromTable(dataset,item);
+			
+			
 			//Send Rule After
 			if (item.getAD_RuleAfter_ID()!=0){
-				Query rp = dataset.addNewQuery();
-				rp.setName(item.getName());
-				rp.setSQL(item.getAD_RuleAfter().getScript());
+				Query query = dataset.addNewQuery();
+				query.setName(item.getName());
+				query.setSQL(item.getAD_RuleAfter().getScript());
 			}
 			
 		}
@@ -126,10 +135,68 @@ public class MSFAndroidServiceImpl {
 	 * @param res
 	 * @return void
 	 */
-	private void getDataFromTable(Response res)
+	private void setDataFromTable(Response resp,MSFASyncMenu sMenu)
 	{
-		
+		MWebServiceType wst = (MWebServiceType) sMenu.getWS_WebServiceType();
+		X_WS_WebService_Para para = wst.getParameter("Action"); 
+		//Set Query
+		Query query = resp.addNewQuery();
+		query.setName(sMenu.getName());
+		query.setSQL(getSql(para, sMenu, wst));
 	}
+	/**
+	 * Get Sql
+	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> 18/02/2014, 20:29:04
+	 * @param p_Para
+	 * @param p_Wst
+	 * @return
+	 * @return String
+	 */
+	private String getSql(X_WS_WebService_Para p_Para,MSFASyncMenu sMenu,MWebServiceType p_Wst){
+		String sql= "";
+		String values = "";
+		MSFATable sfaTable = (MSFATable) sMenu.getSFA_Table();
+		String[] columnsout = p_Wst.getOutputColumnNames(false);
+		String[] columnsin = p_Wst.getInputColumnNames(false);
+		
+		System.out.println(p_Para.getConstantValue());
+		
+		if (p_Para.getConstantValue().equals("Insert")){
+			sql = "INSERT INTO " 
+					+ sfaTable.getTableName() +" (";
+					
+			values = " VALUES (";
+			for (int i=0 ;i<columnsout.length ;i++){
+				sql+= columnsout[i] + ( i == columnsout.length-1 ? "" : "," );
+				values += "?" + ( i == columnsout.length-1 ? "" : "," );
+			}
+			sql+=values;
+		}
+		else if (p_Para.getConstantValue().equals("Update")){
+			sql = "UPDATE " + sfaTable.getTableName() + " SET " ;
+			for (int i=0 ;i<columnsout.length ;i++)
+				sql+= columnsout[i] + " = ? " + ( i == columnsout.length-1 ? "" : "," );
+			
+			if (columnsin.length>0)
+				sql+=" WHERE ";
+			
+			for (int i=0 ;i<columnsin.length ;i++)
+				sql+= columnsout[i] + " = ? " + ( i == columnsout.length-1 ? "" : " AND " );
+		}
+		else if (p_Para.getConstantValue().equals("Delete")){
+			sql = "DELETE FROM " + sfaTable.getTableName(); 
+					
+			if (columnsin.length>0)
+				sql+=" WHERE ";
+			
+			for (int i=0 ;i<columnsin.length ;i++)
+				sql+= columnsout[i] + " = ? " + ( i == columnsout.length-1 ? "" : " AND " );
+		}
+		
+		System.out.println(sql);
+		return sql;
+	}
+	
 	/**
 	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 9:50:30 PM
 	 * @param ds
@@ -243,11 +310,11 @@ public class MSFAndroidServiceImpl {
 	}
 	
 	/** Compiere Service*/
-	protected CompiereService m_adempiere;
+	private CompiereService m_adempiere;
 	/** Client ID*/
 	private Integer m_AD_Client_ID;
 	/** Logger*/
-	protected static CLogger	log = CLogger.getCLogger(SFAndroidServiceImpl.class);
+	private static CLogger	log = CLogger.getCLogger(SFAndroidServiceImpl.class);
 	/** Web Service Definition*/
 	public static final String m_WebServiceDefinition = "SFAndroidService";
 
