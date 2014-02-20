@@ -26,6 +26,9 @@
 
         <!-- Point to the directory where you have adempiere built -->
         <property name="Adempiere.dir" value="${basedir}/../adempiere_370/lib"></property>  <!-- To delete when integrated in trunk -->
+        
+        <!-- Point to the SFAndroid-Server where you have adempiere built -->
+        <property name="SFAndroid-Server.dir" value="${basedir}/../SFAndroid-Server/packages/SFAndroid-Server/lib"></property>  <!-- To delete when integrated in trunk -->
 
 	<property name="war.name"	value="ADInterface-1.0"/>
 	<property name="compile.debug"       value="true"/>
@@ -35,7 +38,7 @@
 	<path id="compile.classpath">
 		<pathelement location="${basedir}"/>
 	  	<pathelement location="${a3ewsdir}/WEB-INF/src"/>
-		<pathelement location="${basedir}/base"/>
+		<pathelement location="${basedir}/WEB-INF/src"/>
 		
 		
 	    <fileset dir="${a3ewsdir}/WEB-INF/lib">
@@ -45,7 +48,7 @@
 	    <fileset dir="${basedir}/WEB-INF/lib">
 	    	<include name="*.jar"/>
 	    </fileset>
-                <pathelement location="${Adempiere.dir}/../base/build"/>
+                <pathelement location="${Adempiere.dir}/../WEB-INF/src/build"/>
                 <pathelement location="${Adempiere.dir}/../client/build"/>
                 <pathelement location="${Adempiere.dir}/../JasperReports/build"/>
 	    <fileset dir="${Adempiere.dir}">
@@ -95,7 +98,7 @@
 	           optimize="${compile.optimize}">
 	        <classpath refid="compile.classpath"/>
 	    </javac>
-	    <javac srcdir="base"
+	    <javac srcdir="WEB-INF/src"
 	           destdir="${classes.dir}"
 	           debug="${compile.debug}"
 	     	   deprecation="${compile.deprecation}"
@@ -104,7 +107,7 @@
 	    </javac>
 		
 		<copy todir="${classes.dir}" >
-		    <fileset dir="base"
+		    <fileset dir="WEB-INF/src"
 		             excludes="**/*.java" />
 		</copy>
 		<copy todir="${classes.dir}">
@@ -150,9 +153,8 @@
 		      <fileset dir="${basedir}" excludes="
 		      	        .settings/**,
 		      	        build.xml,
-				**RUN_build.sh
-				RUN_xmlbean.sh
-				Notes/**,
+				WEB-INF/src/**,
+				bin/**,
 				dist/**,
 				.*,
 				work/**,
@@ -160,8 +162,11 @@
 		      		**/web.xml,
 		      		testScripts/**,
 		      		migration/**,
-		      		WEB-INF/lib/*-sources.jar,
-		      	deploy/**"
+		      		WEB-INF/lib/xbean.jar,
+		      		WEB-INF/lib/xfire-all-1.2.6.jar,
+		      	deploy/**,
+		      	SFAndroid-Server-3EWS-GenerateModel.launch
+		      	codetemplates.xml"
 		      		>
 		      </fileset>
 		</war>

@@ -137,7 +137,7 @@ public class MSFAndroidServiceImpl {
 	 */
 	private void setDataFromTable(Response resp,MSFASyncMenu sMenu)
 	{
-		MWebServiceType wst = (MWebServiceType) sMenu.getWS_WebServiceType();
+		MWebServiceType wst = new MWebServiceType(Env.getCtx(), sMenu.getWS_WebServiceType_ID(), null);
 		X_WS_WebService_Para para = wst.getParameter("Action"); 
 		//Set Query
 		Query query = resp.addNewQuery();
@@ -155,7 +155,7 @@ public class MSFAndroidServiceImpl {
 	private String getSql(X_WS_WebService_Para p_Para,MSFASyncMenu sMenu,MWebServiceType p_Wst){
 		String sql= "";
 		String values = "";
-		MSFATable sfaTable = (MSFATable) sMenu.getSFA_Table();
+		MSFATable sfaTable = new MSFATable(Env.getCtx(), sMenu.getSFA_Table_ID(), null);//(MSFATable) sMenu.getSFA_Table();
 		String[] columnsout = p_Wst.getOutputColumnNames(false);
 		String[] columnsin = p_Wst.getInputColumnNames(false);
 		
