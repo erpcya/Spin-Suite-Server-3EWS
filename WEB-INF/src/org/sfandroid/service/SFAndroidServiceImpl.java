@@ -46,7 +46,9 @@ public class SFAndroidServiceImpl extends MSFAndroidServiceImpl implements SFAnd
 		if (validateUser(req))
 		{
 			try {
-				resp = initialLoad();
+				com.erpcya.Login il = req.getILCall();
+				
+				resp = initialLoad(il.getServiceType());
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				resp = ILResponseDocument.Factory.newInstance();

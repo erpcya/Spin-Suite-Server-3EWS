@@ -41,7 +41,6 @@ import com.erpcya.ILResponseDocument;
 import com.erpcya.Query;
 import com.erpcya.Response;
 
-
 /**
  * 
  * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a>
@@ -66,10 +65,10 @@ public class MSFAndroidServiceImpl {
 	 * @return ILResponseDocument
 	 * Initial Load Process
 	 */
-	public ILResponseDocument initialLoad() throws SQLException{
+	public ILResponseDocument initialLoad(String p_WS_WebServiceValue) throws SQLException{
 		ILResponseDocument resp  = ILResponseDocument.Factory.newInstance();
 		//Get List of Items
-		List<MSFASyncMenu> syncMenuItems = MSFASyncMenu.getNodes(0, m_WebServiceDefinition);
+		List<MSFASyncMenu> syncMenuItems = MSFASyncMenu.getNodes(0, p_WS_WebServiceValue);
 		
 		Response dataset =resp.addNewILResponse();
 		for (MSFASyncMenu item:syncMenuItems){
@@ -129,6 +128,7 @@ public class MSFAndroidServiceImpl {
 		return resp;
 		
 	}
+	
 	/**
 	 * Get Data From Table in Web Service
 	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> 12/02/2014, 23:26:47
@@ -144,6 +144,7 @@ public class MSFAndroidServiceImpl {
 		query.setName(sMenu.getName());
 		query.setSQL(getSql(para, sMenu, wst));
 	}
+	
 	/**
 	 * Get Sql
 	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> 18/02/2014, 20:29:04
@@ -159,8 +160,6 @@ public class MSFAndroidServiceImpl {
 		String[] columnsout = p_Wst.getOutputColumnNames(false);
 		String[] columnsin = p_Wst.getInputColumnNames(false);
 		
-		System.out.println(p_Para.getConstantValue());
-		
 		if (p_Para.getConstantValue().equals("Insert")){
 			sql = "INSERT INTO " 
 					+ sfaTable.getTableName() +" (";
@@ -170,7 +169,7 @@ public class MSFAndroidServiceImpl {
 				sql+= columnsout[i] + ( i == columnsout.length-1 ? "" : "," );
 				values += "?" + ( i == columnsout.length-1 ? "" : "," );
 			}
-			sql+=values;
+			sql+= ") " + values + ");";
 		}
 		else if (p_Para.getConstantValue().equals("Update")){
 			sql = "UPDATE " + sfaTable.getTableName() + " SET " ;
@@ -182,6 +181,8 @@ public class MSFAndroidServiceImpl {
 			
 			for (int i=0 ;i<columnsin.length ;i++)
 				sql+= columnsout[i] + " = ? " + ( i == columnsout.length-1 ? "" : " AND " );
+			
+			sql+=";";
 		}
 		else if (p_Para.getConstantValue().equals("Delete")){
 			sql = "DELETE FROM " + sfaTable.getTableName(); 
@@ -191,9 +192,10 @@ public class MSFAndroidServiceImpl {
 			
 			for (int i=0 ;i<columnsin.length ;i++)
 				sql+= columnsout[i] + " = ? " + ( i == columnsout.length-1 ? "" : " AND " );
+			
+			sql+=";";
 		}
 		
-		System.out.println(sql);
 		return sql;
 	}
 	
@@ -315,8 +317,6 @@ public class MSFAndroidServiceImpl {
 	private Integer m_AD_Client_ID;
 	/** Logger*/
 	private static CLogger	log = CLogger.getCLogger(SFAndroidServiceImpl.class);
-	/** Web Service Definition*/
-	public static final String m_WebServiceDefinition = "SFAndroidService";
 
 	/**
 	@SuppressWarnings("unused")
