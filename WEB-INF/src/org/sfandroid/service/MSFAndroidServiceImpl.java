@@ -16,18 +16,13 @@
 
 package org.sfandroid.service;
 
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.compiere.model.MWebServiceType;
+import org.compiere.model.PO;
 import org.compiere.model.X_WS_WebService_Para;
 import org.compiere.util.CLogger;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
@@ -40,6 +35,7 @@ import com.erpcya.ILCallDocument;
 import com.erpcya.ILResponseDocument;
 import com.erpcya.Query;
 import com.erpcya.Response;
+import com.erpcya.Values;
 
 /**
  * 
@@ -140,63 +136,102 @@ public class MSFAndroidServiceImpl {
 		MWebServiceType wst = new MWebServiceType(Env.getCtx(), sMenu.getWS_WebServiceType_ID(), null);
 		X_WS_WebService_Para para = wst.getParameter("Action"); 
 		//Set Query
-		Query query = resp.addNewQuery();
-		query.setName(sMenu.getName());
-		query.setSQL(getSql(para, sMenu, wst));
+		setSQLValues(para, sMenu, wst,resp);
 	}
 	
 	/**
-	 * Get Sql
-	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> 18/02/2014, 20:29:04
-	 * @param p_Para
-	 * @param p_Wst
-	 * @return
-	 * @return String
+	 * 
+	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> 22/02/2014, 11:31:49
+	 * @param p_sql
+	 * @param p_resp
+	 * @param p_TableName
+	 * @param p_columns
+	 * @return void
 	 */
-	private String getSql(X_WS_WebService_Para p_Para,MSFASyncMenu sMenu,MWebServiceType p_Wst){
+	private void setValues(String p_sql, Response p_resp, String[] p_columns, MSFASyncMenu p_sMenu,String p_TableName){
+		List<PO> records = new org.compiere.model.Query(Env.getCtx(), p_TableName, (p_sMenu.getWhereClause()==null ? "" : p_sMenu.getWhereClause()), null)
+						.setOnlyActiveRecords(true)
+						.list();
+		
+		for (PO record:records){
+			Query query = p_resp.addNewQuery();
+			query.setName(p_sMenu.getName());
+			query.setSQL(p_sql);
+			
+			for (int i=0 ; i < p_columns.length ; i++){
+				Values values = query.addNewValues();
+				values.setValue(record.get_ValueAsString(p_columns[i]));
+				
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> 22/02/2014, 11:31:57
+	 * @param p_Para
+	 * @param p_sMenu
+	 * @param p_Wst
+	 * @param p_resp
+	 * @return void
+	 */
+	private void setSQLValues(X_WS_WebService_Para p_Para,MSFASyncMenu p_sMenu,MWebServiceType p_Wst,Response p_resp){
 		String sql= "";
 		String values = "";
-		MSFATable sfaTable = new MSFATable(Env.getCtx(), sMenu.getSFA_Table_ID(), null);//(MSFATable) sMenu.getSFA_Table();
+		MSFATable sfaTable = new MSFATable(Env.getCtx(), p_sMenu.getSFA_Table_ID(), null);//(MSFATable) sMenu.getSFA_Table();
 		String[] columnsout = p_Wst.getOutputColumnNames(false);
 		String[] columnsin = p_Wst.getInputColumnNames(false);
-		
+		String[] columnsSql = null;
 		if (p_Para.getConstantValue().equals("Insert")){
+			columnsSql = new String[columnsout.length];
 			sql = "INSERT INTO " 
 					+ sfaTable.getTableName() +" (";
-					
+			
 			values = " VALUES (";
 			for (int i=0 ;i<columnsout.length ;i++){
 				sql+= columnsout[i] + ( i == columnsout.length-1 ? "" : "," );
 				values += "?" + ( i == columnsout.length-1 ? "" : "," );
+				columnsSql[i] = columnsout[i];
 			}
+
 			sql+= ") " + values + ");";
 		}
 		else if (p_Para.getConstantValue().equals("Update")){
-			sql = "UPDATE " + sfaTable.getTableName() + " SET " ;
-			for (int i=0 ;i<columnsout.length ;i++)
-				sql+= columnsout[i] + " = ? " + ( i == columnsout.length-1 ? "" : "," );
+			columnsSql = new String[columnsout.length+columnsin.length];
 			
+			sql = "UPDATE " + sfaTable.getTableName() + " SET " ;
+			for (int i=0 ;i<columnsout.length ;i++){
+				sql+= columnsout[i] + " = ? " + ( i == columnsout.length-1 ? "" : "," );
+				columnsSql[i] = columnsout[i]; 
+			}
+
 			if (columnsin.length>0)
 				sql+=" WHERE ";
 			
-			for (int i=0 ;i<columnsin.length ;i++)
-				sql+= columnsout[i] + " = ? " + ( i == columnsout.length-1 ? "" : " AND " );
-			
+			for (int i=0 ;i<columnsin.length ;i++){
+				sql+= columnsin[i] + " = ? " + ( i == columnsin.length-1 ? "" : " AND " );
+				columnsSql[i] = columnsin[columnsout.length + i];
+			}
 			sql+=";";
 		}
 		else if (p_Para.getConstantValue().equals("Delete")){
+			columnsSql = new String[columnsin.length];
+
 			sql = "DELETE FROM " + sfaTable.getTableName(); 
-					
+
 			if (columnsin.length>0)
 				sql+=" WHERE ";
 			
-			for (int i=0 ;i<columnsin.length ;i++)
-				sql+= columnsout[i] + " = ? " + ( i == columnsout.length-1 ? "" : " AND " );
+			for (int i=0 ;i<columnsin.length ;i++){
+				sql+= columnsin[i] + " = ? " + ( i == columnsin.length-1 ? "" : " AND " );
+				columnsSql[i] = columnsin[i];
+			}
 			
 			sql+=";";
 		}
-		
-		return sql;
+
+		//Set Values For SQL
+		setValues(sql,p_resp,columnsSql,p_sMenu,p_Wst.getAD_Table().getTableName());
 	}
 	
 	/**
@@ -207,7 +242,7 @@ public class MSFAndroidServiceImpl {
 	 * @return void
 	 * Load Data From Table
 	 */
-	private void loadFromTable(Response ds, ResultSet rs) throws SQLException
+	/*private void loadFromTable(Response ds, ResultSet rs) throws SQLException
 	{
 		String l_campo = "";
 		int l_init=-1;
@@ -243,7 +278,7 @@ public class MSFAndroidServiceImpl {
 		rsquery.close();
 		psquery.close();
 		
-	}
+	}*/
 	
 	/**
 	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 9:48:33 PM
@@ -251,7 +286,7 @@ public class MSFAndroidServiceImpl {
 	 * @return String
 	 * Transform Date
 	 */
-	private String transformValue(Object p_value)
+	/*private String transformValue(Object p_value)
 	{
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); 
 		
@@ -267,7 +302,7 @@ public class MSFAndroidServiceImpl {
 				p_value = dateFormat.format((Timestamp)p_value);
 		}
 		return p_value.toString();	
-	}
+	}*/
 	
 	/**
 	 * 
