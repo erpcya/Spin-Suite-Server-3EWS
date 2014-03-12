@@ -31,6 +31,7 @@ import org.sfandroid.model.MSFASyncMenu;
 import org.sfandroid.model.MSFATable;
 
 import com._3e.ADInterface.CompiereService;
+import com.erpcya.DataRow;
 import com.erpcya.ILCallDocument;
 import com.erpcya.ILResponseDocument;
 import com.erpcya.Query;
@@ -99,28 +100,6 @@ public class MSFAndroidServiceImpl {
 			
 		}
 		
-		/*StringBuffer sql = new StringBuffer();
-		sql.append("select XXIL.*,TAB.TableName from XX_MB_InitialLoad XXIL Left Join AD_Table TAB on XXIL.AD_Table_ID=TAB.AD_Table_ID Where XXIL.AD_Client_ID ="+m_AD_Client_ID+" And XXIL.isActive='Y' order by XXIL.SeqNo ");
-		
-		PreparedStatement ps = DB.prepareStatement(sql.toString(),null);
-		ResultSet rs = ps.executeQuery();
-		
-		Response dataset =resp.addNewILResponse();
-		while (rs.next())
-		{
-			if (rs.getString("tablename")==null)
-			{
-				Query rp = dataset.addNewQuery();
-				rp.setSQL(rs.getString("sql"));
-				rp.setName(rs.getString("name"));
-			}
-			else
-				loadFromTable(dataset,rs);
-			
-		}
-		rs.close();
-		ps.close();*/
-		
 		return resp;
 		
 	}
@@ -157,9 +136,10 @@ public class MSFAndroidServiceImpl {
 			Query query = p_resp.addNewQuery();
 			query.setName(p_sMenu.getName());
 			query.setSQL(p_sql);
-			
+			DataRow dr = query.addNewDataRow();
 			for (int i=0 ; i < p_columns.length ; i++){
-				Values values = query.addNewValues();
+				Values values = dr.addNewValues();
+				
 				values.setValue(record.get_ValueAsString(p_columns[i]));
 				
 			}
@@ -233,76 +213,6 @@ public class MSFAndroidServiceImpl {
 		//Set Values For SQL
 		setValues(sql,p_resp,columnsSql,p_sMenu,p_Wst.getAD_Table().getTableName());
 	}
-	
-	/**
-	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 9:50:30 PM
-	 * @param ds
-	 * @param rs
-	 * @throws SQLException
-	 * @return void
-	 * Load Data From Table
-	 */
-	/*private void loadFromTable(Response ds, ResultSet rs) throws SQLException
-	{
-		String l_campo = "";
-		int l_init=-1;
-		int l_end=-1;
-		String l_sql = "";
-		Object l_Value = new Object();
-		StringBuffer sql = new StringBuffer(),where = new StringBuffer();
-		
-		where.append(rs.getString("whereclause")!=null?" Where " + rs.getString("whereclause").replaceAll("%AD_User_ID%", Env.getContext(m_adempiere.getM_ctx(), "#AD_User_ID")):"");
-		where.append((where.length()>0?" And (AD_Client_ID="+m_AD_Client_ID+" Or AD_Client_ID=0)":" Where (AD_Client_ID="+m_AD_Client_ID+" Or AD_Client_ID=0)"));
-		
-		sql.append("Select * from "+rs.getString("tablename")+where.toString());
-		
-		PreparedStatement psquery = DB.prepareStatement(sql.toString(),null);
-		ResultSet rsquery =psquery.executeQuery();
-		
-		while(rsquery.next())
-		{
-			l_sql = rs.getString("sql");
-			while (l_sql.indexOf("$")>0)
-			{
-				l_init=l_sql.indexOf("$");
-				l_end=l_sql.indexOf("$",l_init+1);
-				l_campo = l_sql.substring(l_init+1,l_end);
-				l_Value =transformValue(rsquery.getObject(l_campo));
-				l_sql = l_sql.substring(0,l_init ) + l_Value+ l_sql.substring(l_end+1,l_sql.length());
-			}
-			Query qu = ds.addNewQuery();
-			qu.setSQL(l_sql);
-			qu.setName(rs.getString("name"));
-			
-		}
-		rsquery.close();
-		psquery.close();
-		
-	}*/
-	
-	/**
-	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 9:48:33 PM
-	 * @param p_value
-	 * @return String
-	 * Transform Date
-	 */
-	/*private String transformValue(Object p_value)
-	{
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); 
-		
-		if(p_value==null)
-			return "";
-		else
-		{
-			if (p_value instanceof Date)
-				p_value=dateFormat.format((Date)p_value);
-			else if (p_value instanceof java.util.Date)
-				p_value=dateFormat.format((java.util.Date)p_value);
-			else if (p_value instanceof Timestamp)
-				p_value = dateFormat.format((Timestamp)p_value);
-		}
-		return p_value.toString();	
-	}*/
 	
 	/**
 	 * 
