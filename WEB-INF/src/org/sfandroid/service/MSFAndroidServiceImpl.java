@@ -22,13 +22,12 @@ import java.util.List;
 import org.compiere.model.MWebServiceType;
 import org.compiere.model.PO;
 import org.compiere.model.X_WS_WebService_Para;
-import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 
-import org.sfandroid.model.MSFASyncMenu;
-import org.sfandroid.model.MSFATable;
+import org.spinsuite.model.MSPSSyncMenu;
+import org.spinsuite.model.MSPSTable;
 
 import com._3e.ADInterface.CompiereService;
 import com.erpcya.DataRow;
@@ -65,10 +64,10 @@ public class MSFAndroidServiceImpl {
 	public ILResponseDocument initialLoad(String p_WS_WebServiceValue) throws SQLException{
 		ILResponseDocument resp  = ILResponseDocument.Factory.newInstance();
 		//Get List of Items
-		List<MSFASyncMenu> syncMenuItems = MSFASyncMenu.getNodes(0, p_WS_WebServiceValue);
+		List<MSPSSyncMenu> syncMenuItems = MSPSSyncMenu.getNodes(0, p_WS_WebServiceValue);
 		
 		Response dataset =resp.addNewILResponse();
-		for (MSFASyncMenu item:syncMenuItems){
+		for (MSPSSyncMenu item:syncMenuItems){
 			
 			//Send Rule Before
 			if (item.getAD_RuleBefore_ID()!=0){
@@ -78,16 +77,16 @@ public class MSFAndroidServiceImpl {
 			}
 			
 			//Get Rule From Sync Table
-			if(item.getSFA_Table_ID()!=0 && item.getWS_WebServiceType_ID()==0){
-				if (item.getSFA_Table().getAD_Rule_ID()!=0){
+			if(item.getSPS_Table_ID()!=0 && item.getWS_WebServiceType_ID()==0){
+				if (item.getSPS_Table().getAD_Rule_ID()!=0){
 					Query query = dataset.addNewQuery();
 					query.setName(item.getName());
-					query.setSQL(item.getSFA_Table().getAD_Rule().getScript());
+					query.setSQL(item.getSPS_Table().getAD_Rule().getScript());
 				}
 			}
 			
 			//Get Data From Web Service Type 
-			else if (item.getSFA_Table_ID()!=0 && item.getWS_WebServiceType_ID()!=0)
+			else if (item.getSPS_Table_ID()!=0 && item.getWS_WebServiceType_ID()!=0)
 				setDataFromTable(dataset,item);
 			
 			
@@ -110,7 +109,7 @@ public class MSFAndroidServiceImpl {
 	 * @param res
 	 * @return void
 	 */
-	private void setDataFromTable(Response resp,MSFASyncMenu sMenu)
+	private void setDataFromTable(Response resp,MSPSSyncMenu sMenu)
 	{
 		MWebServiceType wst = new MWebServiceType(Env.getCtx(), sMenu.getWS_WebServiceType_ID(), null);
 		X_WS_WebService_Para para = wst.getParameter("Action"); 
@@ -127,7 +126,7 @@ public class MSFAndroidServiceImpl {
 	 * @param p_columns
 	 * @return void
 	 */
-	private void setValues(String p_sql, Response p_resp, String[] p_columns, MSFASyncMenu p_sMenu,String p_TableName){
+	private void setValues(String p_sql, Response p_resp, String[] p_columns, MSPSSyncMenu p_sMenu,String p_TableName){
 		List<PO> records = new org.compiere.model.Query(Env.getCtx(), p_TableName, (p_sMenu.getWhereClause()==null ? "" : p_sMenu.getWhereClause()), null)
 						.setOnlyActiveRecords(true)
 						.list();
@@ -155,10 +154,10 @@ public class MSFAndroidServiceImpl {
 	 * @param p_resp
 	 * @return void
 	 */
-	private void setSQLValues(X_WS_WebService_Para p_Para,MSFASyncMenu p_sMenu,MWebServiceType p_Wst,Response p_resp){
+	private void setSQLValues(X_WS_WebService_Para p_Para,MSPSSyncMenu p_sMenu,MWebServiceType p_Wst,Response p_resp){
 		String sql= "";
 		String values = "";
-		MSFATable sfaTable = new MSFATable(Env.getCtx(), p_sMenu.getSFA_Table_ID(), null);//(MSFATable) sMenu.getSFA_Table();
+		MSPSTable sfaTable = new MSPSTable(Env.getCtx(), p_sMenu.getSPS_Table_ID(), null);//(MSFATable) sMenu.getSFA_Table();
 		String[] columnsout = p_Wst.getOutputColumnNames(false);
 		String[] columnsin = p_Wst.getInputColumnNames(false);
 		String[] columnsSql = null;
@@ -256,38 +255,15 @@ public class MSFAndroidServiceImpl {
 		return m_loggin;
 	}
 	
+	public Integer getM_AD_Client_ID() {
+		return m_AD_Client_ID;
+	}
+	
 	/** Compiere Service*/
 	private CompiereService m_adempiere;
 	/** Client ID*/
 	private Integer m_AD_Client_ID;
 	/** Logger*/
-	private static CLogger	log = CLogger.getCLogger(SFAndroidServiceImpl.class);
+	//private static CLogger	log = CLogger.getCLogger(SFAndroidServiceImpl.class);
 
-	/**
-	@SuppressWarnings("unused")
-	public static void main(String[] args) {
-		//org.compiere.Adempiere.startupEnvironment(true);
-		//System.out.println(Env.getContext(Env.getCtx(), "AD_User_ID"));
-		String a = new String();
-		HashedMap m = new HashedMap();
-		m.put("ab", new java.util.Date());
-		m.put("abc", 1);
-		m.put("abcd", null);
-		
-		String l_campo = "";
-		int l_init=-1;
-		int l_fin=-1;
-		a="insert into prueba(ab,abc,abdc)values($ab$,$abc$,$abcd$)";
-		while (a.indexOf("$")>0)
-		{
-			l_init=a.indexOf("$");
-			l_fin=a.indexOf("$",l_init+1);
-			l_campo = a.substring(l_init+1,l_fin);
-			//a = a.substring(0,l_init ) + MAppDroidServicesImpl.transformValue(m.get(l_campo))+ a.substring(l_fin+1,a.length());
-		
-		}
-		System.out.println(a);
-		
-	}
-	**/
 }
