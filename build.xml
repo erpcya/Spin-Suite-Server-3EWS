@@ -13,7 +13,7 @@
 	<!-- set global properties for this build -->
 	<!--<property environment="env"/>-->
 	<property name="a3ewsdir" value="${basedir}/../3E_WebServices"/>
-	<property name="sfaserver" value="${basedir}/../SFAndroid-Server"/>
+	<property name="spinsuiteserver" value="${basedir}/../Spin-Suite-Server"/>
 	<property name="src.dir" value="${a3ewsdir}/WEB-INF/src"/>
 	<property name="classes.dir" value="${a3ewsdir}/WEB-INF/classes"/>
 	<property name="dist.dir" value="${basedir}/dist"/>
@@ -28,7 +28,7 @@
         <property name="Adempiere.dir" value="${basedir}/../adempiere_370/lib"></property>  <!-- To delete when integrated in trunk -->
         
         <!-- Point to the SFAndroid-Server where you have adempiere built -->
-        <property name="SFAndroid-Server.dir" value="${basedir}/../SFAndroid-Server/packages/SFAndroid-Server/lib"></property>  <!-- To delete when integrated in trunk -->
+        <property name="SFAndroid-Server.dir" value="${spinsuiteserver}/packages/Spin-Suite-Server/lib"></property>  <!-- To delete when integrated in trunk -->
 
 	<property name="war.name"	value="ADInterface-1.0"/>
 	<property name="compile.debug"       value="true"/>
@@ -55,7 +55,7 @@
 	    	<include name="*.jar"/>
 	    </fileset>
 		
-		<fileset dir="${sfaserver}/packages/SFAndroid-Server/lib">
+		<fileset dir="${spinsuiteserver}/packages/Spin-Suite-Server/lib">
 	    	<include name="*.jar"/>
 	    </fileset>
 	    		
@@ -78,13 +78,13 @@
 	             srcgendir="${basedir}/temp">
 	    	<classpath refid="compile.classpath"/>
 	    </xmlbean>
-	    <xmlbean javasource="1.5" schema="${basedir}/WEB-INF/xsd" destfile="${basedir}/WEB-INF/lib/sfandroidws.jar"
+	    <xmlbean javasource="1.5" schema="${basedir}/WEB-INF/xsd" destfile="${basedir}/WEB-INF/lib/spinsuite.jar"
 	             srcgendir="${basedir}/temp">
 	             
 	    	<classpath refid="compile.classpath"/>
 	    </xmlbean>
             <jar jarfile="${a3ewsdir}/WEB-INF/lib/generated_xmlbeans-sources.jar" basedir="${basedir}/temp" duplicate="preserve"/>
-            <jar jarfile="${basedir}/WEB-INF/lib/sfandroidws.jar" basedir="${basedir}/temp" duplicate="preserve"/>
+            <jar jarfile="${basedir}/WEB-INF/lib/spinsuite.jar" basedir="${basedir}/temp" duplicate="preserve"/>
 	    <delete dir="${basedir}/temp"/>
 	</target>
 
@@ -165,7 +165,7 @@
 		      		WEB-INF/lib/xbean.jar,
 		      		WEB-INF/lib/xfire-all-1.2.6.jar,
 		      	deploy/**,
-		      	SFAndroid-Server-3EWS-GenerateModel.launch
+		      	Spin-Suite-Server-3EWS-GenerateModel.launch
 		      	codetemplates.xml"
 		      		>
 		      </fileset>

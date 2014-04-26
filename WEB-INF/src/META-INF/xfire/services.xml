@@ -41,10 +41,10 @@
   </service>
     
  <service>
-  <name>SFAndroidService</name>
+  <name>SpinSuiteService</name>
    <namespace>http://www.erpcya.com</namespace>
-    <serviceClass>org.sfandroid.service.SFAndroidService</serviceClass>
-    <implementationClass>org.sfandroid.service.SFAndroidServiceImpl</implementationClass>
+    <serviceClass>org.spinsuite.service.SpinSuiteService</serviceClass>
+    <implementationClass>org.spinsuite.service.SFAndroidServiceImpl</implementationClass>
     <serviceFactory>org.codehaus.xfire.xmlbeans.XmlBeansServiceFactory</serviceFactory>
 	<scope>request</scope>
 	<style>rpc</style>

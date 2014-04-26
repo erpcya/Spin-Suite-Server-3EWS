@@ -6,7 +6,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/adempiere_370"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/xbean.jar"/>
 	<classpathentry kind="lib" path="WEB-INF/lib/xfire-all-1.2.6.jar"/>
-	<classpathentry kind="lib" path="WEB-INF/lib/sfandroidws.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Spin-Suite-Server"/>
+	<classpathentry kind="lib" path="WEB-INF/lib/spinsuite.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
