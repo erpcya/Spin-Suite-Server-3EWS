@@ -78,7 +78,8 @@ public class MSpinSuiteServiceImpl {
 			
 			//Get Rule From Sync Table
 			if(item.getSPS_Table_ID()!=0 && item.getWS_WebServiceType_ID()==0){
-				if (item.getSPS_Table().getAD_Rule_ID()!=0){
+				MSPSTable table = new MSPSTable(Env.getCtx(), item.getSPS_Table_ID(), null);
+				if (table.getAD_Rule_ID()!=0){
 					Query query = dataset.addNewQuery();
 					query.setName(item.getName());
 					query.setSQL(item.getSPS_Table().getAD_Rule().getScript());
