@@ -61,10 +61,10 @@ public class MSpinSuiteServiceImpl {
 	 * @return ILResponseDocument
 	 * Initial Load Process
 	 */
-	public ILResponseDocument initialLoad(String p_WS_WebServiceValue) throws SQLException{
+	public ILResponseDocument initialLoad(String p_WS_WebServiceValue,String p_WS_WebServiceMethodValue,String p_WS_WebServiceTypeValue) throws SQLException{
 		ILResponseDocument resp  = ILResponseDocument.Factory.newInstance();
 		//Get List of Items
-		List<MSPSSyncMenu> syncMenuItems = MSPSSyncMenu.getNodes(0, p_WS_WebServiceValue);
+		List<MSPSSyncMenu> syncMenuItems = MSPSSyncMenu.getNodes(0, p_WS_WebServiceValue,p_WS_WebServiceMethodValue,p_WS_WebServiceTypeValue);
 		
 		Response dataset =resp.addNewILResponse();
 		for (MSPSSyncMenu item:syncMenuItems){

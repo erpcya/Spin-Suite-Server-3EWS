@@ -48,7 +48,7 @@ public class SpinSuiteServiceImpl extends MSpinSuiteServiceImpl implements SpinS
 			try {
 				com.erpcya.Login il = req.getILCall();
 				
-				resp = initialLoad(il.getServiceType());
+				resp = initialLoad(il.getServiceDefinition(),il.getServiceMethod(),il.getServiceType());
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				resp = ILResponseDocument.Factory.newInstance();
