@@ -10,6 +10,8 @@
   	 	<xsd:sequence>
   	  		<xsd:element name="User" type="xsd:string"/>
   	  		<xsd:element name="PassWord" type="xsd:string"/>
+  	  		<xsd:element name="serviceDefinition" type="xsd:string"/>
+  	  		<xsd:element name="serviceMethod" type="xsd:string"/>
   	  		<xsd:element name="serviceType" type="xsd:string"/>
 	 	</xsd:sequence>
      </xsd:complexType>
