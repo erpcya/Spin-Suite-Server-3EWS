@@ -77,6 +77,8 @@ public class MSpinSuiteServiceImpl {
 			}
 			
 			//Get Rule From Sync Table
+			
+			/*
 			if(item.getSPS_Table_ID()!=0 && item.getWS_WebServiceType_ID()==0){
 				MSPSTable table = new MSPSTable(Env.getCtx(), item.getSPS_Table_ID(), null);
 				if (table.getAD_Rule_ID()!=0){
@@ -85,6 +87,7 @@ public class MSpinSuiteServiceImpl {
 					query.setSQL(item.getSPS_Table().getAD_Rule().getScript());
 				}
 			}
+			*/
 			
 			//Get Data From Web Service Type 
 			else if (item.getSPS_Table_ID()!=0 && item.getWS_WebServiceType_ID()!=0)
@@ -115,7 +118,8 @@ public class MSpinSuiteServiceImpl {
 		MWebServiceType wst = new MWebServiceType(Env.getCtx(), sMenu.getWS_WebServiceType_ID(), null);
 		X_WS_WebService_Para para = wst.getParameter("Action"); 
 		//Set Query
-		setSQLValues(para, sMenu, wst,resp);
+		if (para!=null)
+			setSQLValues(para, sMenu, wst,resp);
 	}
 	
 	/**
@@ -139,9 +143,7 @@ public class MSpinSuiteServiceImpl {
 			DataRow dr = query.addNewDataRow();
 			for (int i=0 ; i < p_columns.length ; i++){
 				Values values = dr.addNewValues();
-				
 				values.setValue(record.get_ValueAsString(p_columns[i]));
-				
 			}
 		}
 	}
@@ -162,6 +164,7 @@ public class MSpinSuiteServiceImpl {
 		String[] columnsout = p_Wst.getOutputColumnNames(false);
 		String[] columnsin = p_Wst.getInputColumnNames(false);
 		String[] columnsSql = null;
+		
 		if (p_Para.getConstantValue().equals("Insert")){
 			columnsSql = new String[columnsout.length];
 			sql = "INSERT INTO " 
@@ -208,6 +211,15 @@ public class MSpinSuiteServiceImpl {
 			}
 			
 			sql+=";";
+		}
+		else if (p_Para.getConstantValue().equals("Script")){
+			MSPSTable table = new MSPSTable(Env.getCtx(), p_sMenu.getSPS_Table_ID(), null);
+			if (table.getAD_Rule_ID()!=0){
+				Query query = p_resp.addNewQuery();
+				query.setName(p_sMenu.getName());
+				query.setSQL(p_sMenu.getSPS_Table().getAD_Rule().getScript());
+			}
+			return;
 		}
 
 		//Set Values For SQL
