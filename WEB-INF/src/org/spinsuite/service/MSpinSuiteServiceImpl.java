@@ -221,7 +221,9 @@ public class MSpinSuiteServiceImpl {
 			}
 			return;
 		}
-
+		
+		if (sql.equals(""))
+			return ;
 		//Set Values For SQL
 		setValues(sql,p_resp,columnsSql,p_sMenu,p_Wst.getAD_Table().getTableName());
 	}
