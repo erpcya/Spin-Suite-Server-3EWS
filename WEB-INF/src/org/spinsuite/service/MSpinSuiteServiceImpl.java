@@ -165,7 +165,7 @@ public class MSpinSuiteServiceImpl {
 		String[] columnsin = p_Wst.getInputColumnNames(false);
 		String[] columnsSql = null;
 		
-		if (p_Para.getConstantValue().equals("Insert")){
+		if (p_Para.getConstantValue().equals("Create")){
 			columnsSql = new String[columnsout.length];
 			sql = "INSERT INTO " 
 					+ sfaTable.getTableName() +" (";
