@@ -16,15 +16,20 @@
 
 package org.spinsuite.service;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.compiere.model.MSysConfig;
 import org.compiere.model.MWebServiceType;
 import org.compiere.model.PO;
 import org.compiere.model.X_WS_WebService_Para;
+import org.compiere.util.CCache;
+import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
+import org.compiere.util.Msg;
 
 import org.spinsuite.model.MSPSSyncMenu;
 import org.spinsuite.model.MSPSTable;
@@ -61,11 +66,11 @@ public class MSpinSuiteServiceImpl {
 	 * @return ILResponseDocument
 	 * Initial Load Process
 	 */
-	public ILResponseDocument initialLoad(String p_WS_WebServiceValue,String p_WS_WebServiceMethodValue,String p_WS_WebServiceTypeValue) throws SQLException{
+	public ILResponseDocument initialLoad(String p_WS_WebServiceValue ,String p_WS_WebServiceMethodValue ,String p_WS_WebServiceTypeValue, int p_Page) throws SQLException{
 		ILResponseDocument resp  = ILResponseDocument.Factory.newInstance();
 		//Get List of Items
 		List<MSPSSyncMenu> syncMenuItems = MSPSSyncMenu.getNodes(0, p_WS_WebServiceValue,p_WS_WebServiceMethodValue,p_WS_WebServiceTypeValue);
-		
+		m_CurrentPage = p_Page;
 		Response dataset =resp.addNewILResponse();
 		for (MSPSSyncMenu item:syncMenuItems){
 			
@@ -75,19 +80,6 @@ public class MSpinSuiteServiceImpl {
 				query.setName(item.getName());
 				query.setSQL(item.getAD_RuleBefore().getScript());
 			}
-			
-			//Get Rule From Sync Table
-			
-			/*
-			if(item.getSPS_Table_ID()!=0 && item.getWS_WebServiceType_ID()==0){
-				MSPSTable table = new MSPSTable(Env.getCtx(), item.getSPS_Table_ID(), null);
-				if (table.getAD_Rule_ID()!=0){
-					Query query = dataset.addNewQuery();
-					query.setName(item.getName());
-					query.setSQL(item.getSPS_Table().getAD_Rule().getScript());
-				}
-			}
-			*/
 			
 			//Get Data From Web Service Type 
 			else if (item.getSPS_Table_ID()!=0 && item.getWS_WebServiceType_ID()!=0)
@@ -132,18 +124,64 @@ public class MSpinSuiteServiceImpl {
 	 * @return void
 	 */
 	private void setValues(String p_sql, Response p_resp, String[] p_columns, MSPSSyncMenu p_sMenu,String p_TableName){
-		List<PO> records = new org.compiere.model.Query(Env.getCtx(), p_TableName, (p_sMenu.getWhereClause()==null ? "" : p_sMenu.getWhereClause()), null)
+		
+		int begin = 0;
+		int end = 0;
+		
+		List<PO> records = null ;
+		String key = m_adempiere.getM_AD_User_ID() + "_" + p_sMenu.getSPS_SyncMenu_ID();
+		
+		if (m_CurrentPage != 0 )
+			records = (List<PO>) s_cache.get (key);
+			
+		if (records == null){
+			records = new org.compiere.model.Query(Env.getCtx(), p_TableName, (p_sMenu.getWhereClause()==null ? "" : p_sMenu.getWhereClause()), null)
 						.setOnlyActiveRecords(true)
 						.list();
+			m_RecByPage = m_RecByPage==0 ? records.size() : m_RecByPage ;
+			
+			
+			if (records.size() != 0)
+				p_resp.setPages(new BigDecimal(records.size() / m_RecByPage).setScale(0, BigDecimal.ROUND_HALF_UP).intValue());
+			else
+				p_resp.setPages(0);
+			
+			m_Pages = p_resp.getPages();
+			
+			s_cache.put (m_adempiere.getM_AD_User_ID() + "_" + p_sMenu.getSPS_SyncMenu_ID(), records);
+		}
+		else{
+			m_RecByPage = m_RecByPage==0 ? records.size() : m_RecByPage ;
+			
+			if (records.size() != 0)
+				p_resp.setPages(new BigDecimal(records.size() / m_RecByPage).setScale(0, BigDecimal.ROUND_HALF_UP).intValue());
+			else
+				p_resp.setPages(0);
+			
+			m_Pages = p_resp.getPages();
+		}
 		
-		for (PO record:records){
+		//Return When Current Page Exceed Total Pages   
+		if (m_CurrentPage >= m_Pages){
+			log.warning(Msg.translate(Env.getCtx(), ""));
+			return ;
+		}
+		
+		//Set Set of records from page 
+		begin = m_CurrentPage * m_RecByPage;
+		end = ( ((m_CurrentPage + 1 ) *  m_RecByPage) > records.size() ? records.size() : ((m_CurrentPage + 1 ) *  m_RecByPage) );
+
+		
+		//for (PO record:records){
+		for (int i= begin; i < end ; i++){
+			PO record = records.get(i); 
 			Query query = p_resp.addNewQuery();
 			query.setName(p_sMenu.getName());
 			query.setSQL(p_sql);
 			DataRow dr = query.addNewDataRow();
-			for (int i=0 ; i < p_columns.length ; i++){
+			for (int j=0 ; j < p_columns.length ; j++){
 				Values values = dr.addNewValues();
-				values.setValue(record.get_ValueAsString(p_columns[i]));
+				values.setValue(record.get_ValueAsString(p_columns[j]));
 			}
 		}
 	}
@@ -276,9 +314,22 @@ public class MSpinSuiteServiceImpl {
 	
 	/** Compiere Service*/
 	private CompiereService m_adempiere;
+	
 	/** Client ID*/
 	private Integer m_AD_Client_ID;
+	
 	/** Logger*/
-	//private static CLogger	log = CLogger.getCLogger(SFAndroidServiceImpl.class);
-
+	private static CLogger	log = CLogger.getCLogger(SpinSuiteServiceImpl.class);
+	
+	/** Cache List PO */ 
+	private static CCache<String,List<PO>>	s_cache	= new CCache<String,List<PO>>("MSpinSuiteServiceImpl" , 20, 10);	//	10 minutes
+	
+	/** Records per Page*/
+	private int m_RecByPage  = MSysConfig.getIntValue("WS_RECORDS_BY_PAGE", 0);
+	
+	/** Pages */
+	private int m_Pages = 0 ; 
+	
+	/**Current Page*/
+	private int m_CurrentPage = 0;
 }
