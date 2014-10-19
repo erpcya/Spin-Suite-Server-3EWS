@@ -19,6 +19,7 @@ package org.spinsuite.service;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Properties;
 
 import org.compiere.model.MSysConfig;
 import org.compiere.model.MWebServiceType;
@@ -30,7 +31,6 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 import org.compiere.util.Msg;
-
 import org.spinsuite.model.MSPSSyncMenu;
 import org.spinsuite.model.MSPSTable;
 
@@ -57,6 +57,7 @@ public class MSpinSuiteServiceImpl {
 		// TODO Auto-generated constructor stub
 		m_adempiere = new CompiereService();
 		m_adempiere.connect();	
+		ctx = m_adempiere.getM_ctx();
 	}
 	
 	/**
@@ -107,7 +108,7 @@ public class MSpinSuiteServiceImpl {
 	 */
 	private void setDataFromTable(Response resp,MSPSSyncMenu sMenu)
 	{
-		MWebServiceType wst = new MWebServiceType(Env.getCtx(), sMenu.getWS_WebServiceType_ID(), null);
+		MWebServiceType wst = new MWebServiceType(ctx, sMenu.getWS_WebServiceType_ID(), null);
 		X_WS_WebService_Para para = wst.getParameter("Action"); 
 		//Set Query
 		if (para!=null)
@@ -135,14 +136,16 @@ public class MSpinSuiteServiceImpl {
 			records = (List<PO>) s_cache.get (key);
 			
 		if (records == null){
-			records = new org.compiere.model.Query(Env.getCtx(), p_TableName, (p_sMenu.getWhereClause()==null ? "" : p_sMenu.getWhereClause()), null)
+			records = new org.compiere.model.Query(ctx, p_TableName, (p_sMenu.getWhereClause()==null ? "" : p_sMenu.getWhereClause()), null)
 						.setOnlyActiveRecords(true)
+						.setApplyAccessFilter(true)
 						.list();
+			
 			m_RecByPage = m_RecByPage==0 ? records.size() : m_RecByPage ;
 			
 			
 			if (records.size() != 0)
-				p_resp.setPages(new BigDecimal(records.size() / m_RecByPage).setScale(0, BigDecimal.ROUND_HALF_UP).intValue());
+				p_resp.setPages(new BigDecimal(records.size()).divide(new BigDecimal(m_RecByPage)).setScale(0, BigDecimal.ROUND_UP).intValue());
 			else
 				p_resp.setPages(0);
 			
@@ -154,7 +157,7 @@ public class MSpinSuiteServiceImpl {
 			m_RecByPage = m_RecByPage==0 ? records.size() : m_RecByPage ;
 			
 			if (records.size() != 0)
-				p_resp.setPages(new BigDecimal(records.size() / m_RecByPage).setScale(0, BigDecimal.ROUND_HALF_UP).intValue());
+				p_resp.setPages(new BigDecimal(records.size()).divide(new BigDecimal(m_RecByPage)).setScale(0, BigDecimal.ROUND_UP).intValue());
 			else
 				p_resp.setPages(0);
 			
@@ -163,7 +166,7 @@ public class MSpinSuiteServiceImpl {
 		
 		//Return When Current Page Exceed Total Pages   
 		if (m_CurrentPage >= m_Pages){
-			log.warning(Msg.translate(Env.getCtx(), ""));
+			log.warning(Msg.translate(ctx, "@NoLines@"));
 			return ;
 		}
 		
@@ -171,8 +174,6 @@ public class MSpinSuiteServiceImpl {
 		begin = m_CurrentPage * m_RecByPage;
 		end = ( ((m_CurrentPage + 1 ) *  m_RecByPage) > records.size() ? records.size() : ((m_CurrentPage + 1 ) *  m_RecByPage) );
 
-		
-		//for (PO record:records){
 		for (int i= begin; i < end ; i++){
 			PO record = records.get(i); 
 			Query query = p_resp.addNewQuery();
@@ -181,7 +182,11 @@ public class MSpinSuiteServiceImpl {
 			DataRow dr = query.addNewDataRow();
 			for (int j=0 ; j < p_columns.length ; j++){
 				Values values = dr.addNewValues();
-				values.setValue(record.get_ValueAsString(p_columns[j]));
+
+				if (record.get_Value(p_columns[j]) instanceof Boolean)
+					values.setValue(record.get_ValueAsBoolean(p_columns[j]) ? "Y" : "N");
+				else
+					values.setValue(record.get_ValueAsString(p_columns[j]));
 			}
 		}
 	}
@@ -198,7 +203,7 @@ public class MSpinSuiteServiceImpl {
 	private void setSQLValues(X_WS_WebService_Para p_Para,MSPSSyncMenu p_sMenu,MWebServiceType p_Wst,Response p_resp){
 		String sql= "";
 		String values = "";
-		MSPSTable sfaTable = new MSPSTable(Env.getCtx(), p_sMenu.getSPS_Table_ID(), null);//(MSFATable) sMenu.getSFA_Table();
+		MSPSTable sfaTable = new MSPSTable(ctx, p_sMenu.getSPS_Table_ID(), null);//(MSFATable) sMenu.getSFA_Table();
 		String[] columnsout = p_Wst.getOutputColumnNames(false);
 		String[] columnsin = p_Wst.getInputColumnNames(false);
 		String[] columnsSql = null;
@@ -251,7 +256,7 @@ public class MSpinSuiteServiceImpl {
 			sql+=";";
 		}
 		else if (p_Para.getConstantValue().equals("Script")){
-			MSPSTable table = new MSPSTable(Env.getCtx(), p_sMenu.getSPS_Table_ID(), null);
+			MSPSTable table = new MSPSTable(ctx, p_sMenu.getSPS_Table_ID(), null);
 			if (table.getAD_Rule_ID()!=0){
 				Query query = p_resp.addNewQuery();
 				query.setName(p_sMenu.getName());
@@ -292,15 +297,15 @@ public class MSpinSuiteServiceImpl {
 	{
 		boolean m_loggin =false; 
 		Login loggin  = new Login(m_adempiere.getM_ctx()); 
-		KeyNamePair[] users =	loggin.getRoles (user, pass);
-		if (users!=null)
+		KeyNamePair[] roles =	loggin.getRoles (user, pass);
+		if (roles!=null)
 		{
-			if(users.length>0)
+			if(roles.length>0)
 			{
 				m_loggin = true;
-				KeyNamePair[] clients = loggin.getClients (users[0]);
-				if (clients != null)
-					m_AD_Client_ID = (clients.length > 0?(Integer)clients[0].getKey():null);
+				KeyNamePair[] clients = loggin.getClients (roles[0]);
+				if (clients != null){
+					m_AD_Client_ID = (clients.length > 0?(Integer)clients[0].getKey():null);				}
 			}
 			else
 				m_loggin= false;
@@ -308,6 +313,11 @@ public class MSpinSuiteServiceImpl {
 		return m_loggin;
 	}
 	
+	/**
+	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> 18/10/2014, 18:09:13
+	 * @return
+	 * @return Integer
+	 */
 	public Integer getM_AD_Client_ID() {
 		return m_AD_Client_ID;
 	}
@@ -332,4 +342,7 @@ public class MSpinSuiteServiceImpl {
 	
 	/**Current Page*/
 	private int m_CurrentPage = 0;
+	
+	/** Context*/
+	private Properties ctx = null;
 }
