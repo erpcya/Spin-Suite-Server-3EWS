@@ -14,6 +14,8 @@
   	  		<xsd:element name="serviceMethod" type="xsd:string"/>
   	  		<xsd:element name="serviceType" type="xsd:string"/>
   	  		<xsd:element name="Page" type="xsd:int"/>
+  	  		<xsd:element name="Lang" type="xsd:string"/>
+  	  		<xsd:element name="WSNumber" type="xsd:int"/>
   	  		
 	 	</xsd:sequence>
      </xsd:complexType>
@@ -23,6 +25,7 @@
    	 	<xsd:sequence>
    			<xsd:element name="Query" type="tns:Query" minOccurs="0" maxOccurs="unbounded"/>
    			<xsd:element name="Pages" type="xsd:int"/>
+   			<xsd:element name="WSCount" type="xsd:int"/>
 			<xsd:element name="Error" type="xsd:string"/>
      	</xsd:sequence>
      </xsd:complexType>
