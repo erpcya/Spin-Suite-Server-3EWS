@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
-
 import org.compiere.model.MSysConfig;
 import org.compiere.model.MWebServiceType;
 import org.compiere.model.PO;
@@ -33,7 +32,6 @@ import org.compiere.util.Login;
 import org.compiere.util.Msg;
 import org.spinsuite.model.MSPSSyncMenu;
 import org.spinsuite.model.MSPSTable;
-
 import com._3e.ADInterface.CompiereService;
 import com.erpcya.DataRow;
 import com.erpcya.ILCallDocument;
@@ -67,37 +65,51 @@ public class MSpinSuiteServiceImpl {
 	 * @return ILResponseDocument
 	 * Initial Load Process
 	 */
-	public ILResponseDocument initialLoad(String p_WS_WebServiceValue ,String p_WS_WebServiceMethodValue ,String p_WS_WebServiceTypeValue, int p_Page) throws SQLException{
+	public ILResponseDocument initialLoad(String p_WS_WebServiceValue ,String p_WS_WebServiceMethodValue ,String p_WS_WebServiceTypeValue, int p_Page, int p_CurrentWS) throws SQLException{
 		ILResponseDocument resp  = ILResponseDocument.Factory.newInstance();
 		//Get List of Items
-		List<MSPSSyncMenu> syncMenuItems = MSPSSyncMenu.getNodes(0, p_WS_WebServiceValue,p_WS_WebServiceMethodValue,p_WS_WebServiceTypeValue);
-		m_CurrentPage = p_Page;
-		Response dataset =resp.addNewILResponse();
-		for (MSPSSyncMenu item:syncMenuItems){
+		List<MSPSSyncMenu> syncMenuItems  = null;
+		
+		String key = m_adempiere.getM_AD_User_ID() + "_" + MSPSSyncMenu.Table_Name;
+		
+		
+		
+		if (m_CurrentWS != 0 )
+			syncMenuItems = (List<MSPSSyncMenu>) s_cachesm.get (key);
 			
-			//Send Rule Before
-			if (item.getAD_RuleBefore_ID()!=0){
-				Query query = dataset.addNewQuery();
-				query.setName(item.getName());
-				query.setSQL(item.getAD_RuleBefore().getScript());
-			}
-			
-			//Get Data From Web Service Type 
-			else if (item.getSPS_Table_ID()!=0 && item.getWS_WebServiceType_ID()!=0)
-				setDataFromTable(dataset,item);
-			
-			
-			//Send Rule After
-			if (item.getAD_RuleAfter_ID()!=0){
-				Query query = dataset.addNewQuery();
-				query.setName(item.getName());
-				query.setSQL(item.getAD_RuleAfter().getScript());
-			}
-			
+		if (syncMenuItems == null){
+			syncMenuItems = MSPSSyncMenu.getNodes(0, p_WS_WebServiceValue,p_WS_WebServiceMethodValue,p_WS_WebServiceTypeValue);
+			s_cachesm.put(key, syncMenuItems);
 		}
 		
-		return resp;
+		m_CurrentPage = p_Page;
+		m_CountWS = syncMenuItems.size();
+		m_CurrentWS = p_CurrentWS ;
+		Response dataset =resp.addNewILResponse();
 		
+		//for (MSPSSyncMenu item:syncMenuItems){
+		MSPSSyncMenu item = 	syncMenuItems.get(m_CurrentWS);
+		//Send Rule Before
+		if (item.getAD_RuleBefore_ID()!=0){
+			Query query = dataset.addNewQuery();
+			query.setName(item.getName());
+			query.setSQL(item.getAD_RuleBefore().getScript());
+		}
+		
+		//Get Data From Web Service Type 
+		else if (item.getSPS_Table_ID()!=0 && item.getWS_WebServiceType_ID()!=0)
+			setDataFromTable(dataset,item);
+		
+		//Send Rule After
+		if (item.getAD_RuleAfter_ID()!=0){
+			Query query = dataset.addNewQuery();
+			query.setName(item.getName());
+			query.setSQL(item.getAD_RuleAfter().getScript());
+		}
+		dataset.setWSCount(m_CountWS);
+		//}
+		
+		return resp;
 	}
 	
 	/**
@@ -151,7 +163,7 @@ public class MSpinSuiteServiceImpl {
 			
 			m_Pages = p_resp.getPages();
 			
-			s_cache.put (m_adempiere.getM_AD_User_ID() + "_" + p_sMenu.getSPS_SyncMenu_ID(), records);
+			s_cache.put (key, records);
 		}
 		else{
 			m_RecByPage = m_RecByPage==0 ? records.size() : m_RecByPage ;
@@ -177,13 +189,15 @@ public class MSpinSuiteServiceImpl {
 		for (int i= begin; i < end ; i++){
 			PO record = records.get(i); 
 			Query query = p_resp.addNewQuery();
-			query.setName(p_sMenu.getName());
+			query.setName(p_sMenu.get_Translation("Name",Env.getAD_Language(ctx)));
 			query.setSQL(p_sql);
 			DataRow dr = query.addNewDataRow();
 			for (int j=0 ; j < p_columns.length ; j++){
 				Values values = dr.addNewValues();
 
-				if (record.get_Value(p_columns[j]) instanceof Boolean)
+				if (record.get_Value(p_columns[j]) == null)
+					values.setValue(null);
+				else if (record.get_Value(p_columns[j]) instanceof Boolean)
 					values.setValue(record.get_ValueAsBoolean(p_columns[j]) ? "Y" : "N");
 				else
 					values.setValue(record.get_ValueAsString(p_columns[j]));
@@ -278,10 +292,12 @@ public class MSpinSuiteServiceImpl {
 	 * @return boolean
 	 * Return Result of Logging In Adempiere
 	 */
-	protected boolean validateUser(ILCallDocument input)
+	protected boolean validateUser(ILCallDocument input,String p_Lang)
 	{
 		com.erpcya.Login il = input.getILCall();
-		return loggin(il.getUser(), il.getPassWord());
+		System.out.println("p_Lang:" + p_Lang);
+		return loggin(il.getUser(), il.getPassWord(), p_Lang);
+		
 	}
 	
 	/**
@@ -293,19 +309,36 @@ public class MSpinSuiteServiceImpl {
 	 * @return boolean
 	 * Logging In Adempiere
 	 */
-	private boolean loggin(String user, String pass)
+	private boolean loggin(String user, String pass,String p_Lang)
 	{
-		boolean m_loggin =false; 
+		boolean m_loggin =false;
+		int USER_ID = 0;
+		int ROLE_ID = 0;
+		int ORG_ID = 0;
+
+		
 		Login loggin  = new Login(m_adempiere.getM_ctx()); 
 		KeyNamePair[] roles =	loggin.getRoles (user, pass);
+		
+		USER_ID = Env.getContextAsInt(ctx, "#AD_User_ID");
+		
 		if (roles!=null)
 		{
 			if(roles.length>0)
 			{
+				ROLE_ID = (Integer)roles[0].getKey();
+				
 				m_loggin = true;
 				KeyNamePair[] clients = loggin.getClients (roles[0]);
 				if (clients != null){
-					m_AD_Client_ID = (clients.length > 0?(Integer)clients[0].getKey():null);				}
+					if (clients.length > 0 ){
+						m_AD_Client_ID = (Integer)clients[0].getKey();
+						KeyNamePair[] orgs = loggin.getOrgs(clients[0]);
+						if (orgs.length > 0)
+							ORG_ID =  (Integer)orgs[0].getKey();
+					}
+					m_adempiere.login(USER_ID, ROLE_ID , m_AD_Client_ID, ORG_ID, m_adempiere.getM_AD_Warehouse_ID(),p_Lang);					
+				}
 			}
 			else
 				m_loggin= false;
@@ -334,6 +367,9 @@ public class MSpinSuiteServiceImpl {
 	/** Cache List PO */ 
 	private static CCache<String,List<PO>>	s_cache	= new CCache<String,List<PO>>("MSpinSuiteServiceImpl" , 20, 10);	//	10 minutes
 	
+	/** Cache List MSPSSyncMenu */
+	private static CCache<String,List<MSPSSyncMenu>> s_cachesm = new CCache<String,List<MSPSSyncMenu>>("MSpinSuiteServiceImplSM" , 20, 10);	//	10 minutes
+	
 	/** Records per Page*/
 	private int m_RecByPage  = MSysConfig.getIntValue("WS_RECORDS_BY_PAGE", 0);
 	
@@ -342,6 +378,12 @@ public class MSpinSuiteServiceImpl {
 	
 	/**Current Page*/
 	private int m_CurrentPage = 0;
+	
+	/** Current Service*/
+	private int m_CurrentWS = 0;
+	
+	/** Count Services */
+	private int m_CountWS = 0;
 	
 	/** Context*/
 	private Properties ctx = null;

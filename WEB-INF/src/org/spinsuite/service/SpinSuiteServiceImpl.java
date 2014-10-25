@@ -43,28 +43,24 @@ public class SpinSuiteServiceImpl extends MSpinSuiteServiceImpl implements SpinS
 		
 		ILResponseDocument resp;
 		
-		if (validateUser(req))
-		{
-			try {
-				com.erpcya.Login il = req.getILCall();
-				System.out.println(il.getPage());
-				resp = initialLoad(il.getServiceDefinition(),il.getServiceMethod(),il.getServiceType(),il.getPage());
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
+		try {
+			com.erpcya.Login il = req.getILCall();
+			if (validateUser(req,il.getLang()))
+				resp = initialLoad(il.getServiceDefinition(),il.getServiceMethod(),il.getServiceType(),il.getPage(),il.getWSNumber());
+			else
+			{
 				resp = ILResponseDocument.Factory.newInstance();
-				Response rs = resp.addNewILResponse();
-				rs.setError(e.getMessage());
-				throw new XFireFault(e.getClass().toString() + " " + e.getMessage() , e.getCause(), new QName("initLoad"));
+				Response ds = resp.addNewILResponse();
+				ds.setError(Msg.translate(Env.getCtx(), "UserPwdError"));
+				throw new XFireFault(Msg.translate(Env.getCtx(), "UserPwdError"),new Throwable(Msg.translate(Env.getCtx(), "UserPwdError")), new QName("authenticate"));			
 			}
-		}
-		else
-		{
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			resp = ILResponseDocument.Factory.newInstance();
-			Response ds = resp.addNewILResponse();
-			ds.setError(Msg.translate(Env.getCtx(), "UserPwdError"));
-			throw new XFireFault(Msg.translate(Env.getCtx(), "UserPwdError"),new Throwable(Msg.translate(Env.getCtx(), "UserPwdError")), new QName("authenticate"));			
+			Response rs = resp.addNewILResponse();
+			rs.setError(e.getMessage());
+			throw new XFireFault(e.getClass().toString() + " " + e.getMessage() , e.getCause(), new QName("initLoad"));
 		}
-				
 		return resp;
 	}
 	
