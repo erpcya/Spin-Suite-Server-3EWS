@@ -295,7 +295,6 @@ public class MSpinSuiteServiceImpl {
 	protected boolean validateUser(ILCallDocument input,String p_Lang)
 	{
 		com.erpcya.Login il = input.getILCall();
-		System.out.println("p_Lang:" + p_Lang);
 		return loggin(il.getUser(), il.getPassWord(), p_Lang);
 		
 	}
