@@ -148,7 +148,7 @@ public class MSpinSuiteServiceImpl {
 			records = (List<PO>) s_cache.get (key);
 			
 		if (records == null){
-			records = new org.compiere.model.Query(ctx, p_TableName, (p_sMenu.getWhereClause()==null ? "" : p_sMenu.getWhereClause()), null)
+			records = new org.compiere.model.Query(ctx, p_TableName, (p_sMenu.getWhereClause()==null ? "" : Env.parseContext(ctx,0,p_sMenu.getWhereClause(),false)), null)
 						.setOnlyActiveRecords(true)
 						.setApplyAccessFilter(true)
 						.list();
