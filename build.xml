@@ -12,7 +12,7 @@
   	</description>
 	<!-- set global properties for this build -->
 	<!--<property environment="env"/>-->
-	<property name="a3ewsdir" value="${basedir}/../3E_WebServices"/>
+	<property name="a3ewsdir" value="${basedir}/../contribution_web_services"/>
 	<property name="spinsuiteserver" value="${basedir}/../Spin-Suite-Server"/>
 	<property name="src.dir" value="${a3ewsdir}/WEB-INF/src"/>
 	<property name="classes.dir" value="${a3ewsdir}/WEB-INF/classes"/>
