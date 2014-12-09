@@ -69,7 +69,7 @@ public class MSpinSuiteServiceImpl {
 		ILResponseDocument resp  = ILResponseDocument.Factory.newInstance();
 		//Get List of Items
 		List<MSPSSyncMenu> syncMenuItems  = null;
-		
+		int lastWS =0;
 		String key = m_adempiere.getM_AD_User_ID() + "_" + MSPSSyncMenu.Table_Name;
 		
 		
@@ -85,10 +85,14 @@ public class MSpinSuiteServiceImpl {
 		m_CurrentPage = p_Page;
 		m_CountWS = syncMenuItems.size();
 		m_CurrentWS = p_CurrentWS ;
+		lastWS = m_WSMethodValCreateMetaData.equals(p_WS_WebServiceMethodValue) ? m_CountWS : m_CurrentWS >= m_CountWS ? m_CountWS :  m_CurrentWS + 1;
+		//m_WSMethodValCreateMetaData
 		Response dataset =resp.addNewILResponse();
 		
 		//for (MSPSSyncMenu item:syncMenuItems){
-		MSPSSyncMenu item = 	syncMenuItems.get(m_CurrentWS);
+		for (int i= m_CurrentWS ;i < lastWS;i++){
+			
+		MSPSSyncMenu item = 	syncMenuItems.get(i);
 		//Send Rule Before
 		if (item.getAD_RuleBefore_ID()!=0){
 			Query query = dataset.addNewQuery();
@@ -97,7 +101,7 @@ public class MSpinSuiteServiceImpl {
 		}
 		
 		//Get Data From Web Service Type 
-		else if (item.getSPS_Table_ID()!=0 && item.getWS_WebServiceType_ID()!=0)
+		if (item.getSPS_Table_ID()!=0 && item.getWS_WebServiceType_ID()!=0)
 			setDataFromTable(dataset,item);
 		
 		//Send Rule After
@@ -106,8 +110,13 @@ public class MSpinSuiteServiceImpl {
 			query.setName(item.getName());
 			query.setSQL(item.getAD_RuleAfter().getScript());
 		}
-		dataset.setWSCount(m_CountWS);
+		
 		//}
+		}
+		if (!m_WSMethodValCreateMetaData.equals(p_WS_WebServiceMethodValue))
+			dataset.setWSCount(m_CountWS );
+		else
+			dataset.setWSCount(1);
 		
 		return resp;
 	}
@@ -386,4 +395,8 @@ public class MSpinSuiteServiceImpl {
 	
 	/** Context*/
 	private Properties ctx = null;
+	
+	/** Web Sevice Method Create Data*/
+	
+	private static String m_WSMethodValCreateMetaData = "CreateMetadata";
 }

@@ -13,7 +13,7 @@
 	<!-- set global properties for this build -->
 	<!--<property environment="env"/>-->
 	<property name="a3ewsdir" value="${basedir}/../contribution_web_services"/>
-	<property name="spinsuiteserver" value="${basedir}/../Spin-Suite-Server"/>
+	<property name="spinsuiteserver" value="${basedir}/../spin-suite-server"/>
 	<property name="src.dir" value="${a3ewsdir}/WEB-INF/src"/>
 	<property name="classes.dir" value="${a3ewsdir}/WEB-INF/classes"/>
 	<property name="dist.dir" value="${basedir}/dist"/>
@@ -28,7 +28,7 @@
         <property name="Adempiere.dir" value="${basedir}/../adempiere_370/lib"></property>  <!-- To delete when integrated in trunk -->
         
         <!-- Point to the SFAndroid-Server where you have adempiere built -->
-        <property name="SFAndroid-Server.dir" value="${spinsuiteserver}/packages/Spin-Suite-Server/lib"></property>  <!-- To delete when integrated in trunk -->
+        <property name="SFAndroid-Server.dir" value="${spinsuiteserver}/packages/spin-suite-server/lib"></property>  <!-- To delete when integrated in trunk -->
 
 	<property name="war.name"	value="ADInterface-1.0"/>
 	<property name="compile.debug"       value="true"/>
