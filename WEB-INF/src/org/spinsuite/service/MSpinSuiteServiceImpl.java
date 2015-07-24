@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
+
 import org.compiere.model.MSysConfig;
 import org.compiere.model.MWebServiceType;
 import org.compiere.model.PO;
@@ -32,8 +33,10 @@ import org.compiere.util.Login;
 import org.compiere.util.Msg;
 import org.spinsuite.model.MSPSSyncMenu;
 import org.spinsuite.model.MSPSTable;
+
 import com._3e.ADInterface.CompiereService;
 import com.erpcya.DataRow;
+import com.erpcya.ILAuthenticateDocument;
 import com.erpcya.ILCallDocument;
 import com.erpcya.ILResponseDocument;
 import com.erpcya.Query;
@@ -309,6 +312,19 @@ public class MSpinSuiteServiceImpl {
 		
 	}
 	
+	/**
+	 * 
+	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 9:34:36 PM
+	 * @param input
+	 * @return boolean
+	 * Return Result of Logging In Adempiere
+	 */
+	protected boolean validateUser(ILAuthenticateDocument input,String p_Lang)
+	{
+		com.erpcya.Authenticate il = input.getILAuthenticate();
+		return loggin(il.getUser(), il.getPassWord(), p_Lang);
+		
+	}
 	/**
 	 * 
 	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 9:37:43 PM

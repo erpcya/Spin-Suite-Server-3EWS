@@ -17,10 +17,14 @@ package org.spinsuite.service;
 
 
 import java.sql.SQLException;
+
 import javax.xml.namespace.QName;
+
 import org.codehaus.xfire.fault.XFireFault;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+
+import com.erpcya.ILAuthenticateDocument;
 import com.erpcya.ILCallDocument;
 import com.erpcya.ILResponseDocument;
 import com.erpcya.Response;
@@ -33,7 +37,7 @@ import com.erpcya.Response;
 public class SpinSuiteServiceImpl extends MSpinSuiteServiceImpl implements SpinSuiteService {
 
 	/**
-	 * @author <a href="mailto:carlosaparadam@gmail.com">Carlos Parada</a> May 7, 2013, 9:28:03 PM
+	 * @author <a href="mailto:cparada@erpcya.com">Carlos Parada</a> May 7, 2013, 9:28:03 PM
 	 * Get Response Initial Load 
 	 */
 	@Override
@@ -72,5 +76,12 @@ public class SpinSuiteServiceImpl extends MSpinSuiteServiceImpl implements SpinS
 	public String getVersion() {
 		// TODO Auto-generated method stub
 		return "2.0";
+	}
+
+	@Override
+	public boolean Authenticate(ILAuthenticateDocument authenticate)
+			throws XFireFault {
+		// TODO Auto-generated method stub
+		return validateUser(authenticate,null);
 	}
 }

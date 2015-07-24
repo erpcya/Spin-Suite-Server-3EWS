@@ -5,6 +5,11 @@
   <!-- Response Of Web Service -->
   <xsd:element name="ILResponse" type="tns:Response"/>
 
+  <!-- Authenticate Web Service --> 
+  <xsd:element name="ILAuthenticate" type="tns:Authenticate"/>
+  <!-- Response Of Web Service -->
+  <xsd:element name="ILAuthenticate-Response" type="tns:Authenticate-Response"/>
+
   	 <!-- Login Adempiere -->
      <xsd:complexType name="Login">
   	 	<xsd:sequence>
@@ -20,6 +25,14 @@
 	 	</xsd:sequence>
      </xsd:complexType>
 
+  	 <!-- Authenticate Adempiere -->
+     <xsd:complexType name="Authenticate">
+  	 	<xsd:sequence>
+  	  		<xsd:element name="User" type="xsd:string"/>
+  	  		<xsd:element name="PassWord" type="xsd:string"/>
+	 	</xsd:sequence>
+     </xsd:complexType>
+     
      <!-- Response Web Service -->
      <xsd:complexType name="Response">
    	 	<xsd:sequence>
@@ -52,6 +65,14 @@
   	 	<xsd:sequence>
 	  		<xsd:element name="Value" type="xsd:string"/>
 	 	</xsd:sequence>
+     </xsd:complexType>
+     
+     <!-- Response Authenticate -->
+     <xsd:complexType name="Authenticate-Response">
+   	 	<xsd:sequence>
+   			<xsd:element name="Pages" type="xsd:boolean"/>
+			<xsd:element name="Error" type="xsd:string"/>
+     	</xsd:sequence>
      </xsd:complexType>
 
 </xsd:schema>
